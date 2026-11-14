@@ -1,0 +1,15 @@
+{
+  "artifact_type": "deployment-strategy",
+  "hosting_model": "static-cdn",
+  "pipeline_diagram_mermaid": "flowchart LR\n  Lint --> UnitTests --> Build --> DeployCDN",
+  "public_env_vars": [
+    { "name": "VITE_API_BASE_URL", "purpose": "Base URL publica de API analitica", "is_secret": false }
+  ],
+  "security_headers": [
+    "Content-Security-Policy",
+    "X-Content-Type-Options: nosniff",
+    "Referrer-Policy: strict-origin-when-cross-origin"
+  ],
+  "cache_policy": "immutable assets con hash y no-cache en index.html",
+  "rollback_strategy": "Reversion instantanea a release inmutable anterior en CDN"
+}

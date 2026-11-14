@@ -1,0 +1,27 @@
+{
+  "artifact_type": "component-hierarchy",
+  "atomic_levels": ["atoms", "molecules", "organisms", "layouts", "pages"],
+  "dependency_rule": "Pages -> Organisms -> Molecules -> Atoms -> Design Tokens",
+  "components": [
+    {
+      "id": "CMP-DASH-001",
+      "name": "AnalyticsDataTable",
+      "atomic_level": "organisms",
+      "fsm_required": true,
+      "file_path": "src/features/analytics/AnalyticsDataTable.tsx",
+      "consumed_tokens": ["color-surface", "color-border", "color-primary", "color-danger"],
+      "a11y_roles": ["table", "alert", "navigation"],
+      "status": "Activo"
+    },
+    {
+      "id": "CMP-DASH-002",
+      "name": "ExportReportButton",
+      "atomic_level": "molecules",
+      "fsm_required": true,
+      "file_path": "src/features/analytics/ExportReportButton.tsx",
+      "consumed_tokens": ["color-primary"],
+      "a11y_roles": ["button"],
+      "status": "Activo"
+    }
+  ]
+}

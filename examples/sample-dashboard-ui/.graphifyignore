@@ -1,0 +1,72 @@
+# ==============================================================================
+# .graphifyignore - Exclusiones para el Grafo de Conocimiento Frontend (Graphify)
+# ==============================================================================
+
+# 1. Dependencias y Gestores de Paquetes
+node_modules/
+.pnpm-store/
+vendor/
+.venv/
+venv/
+
+# 2. Salidas de Build y Meta-Frameworks Frontend
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+.svelte-kit/
+.astro/
+.angular/
+storybook-static/
+*.tsbuildinfo
+
+# 3. Reportes de Pruebas, Cobertura y Artefactos Visuales
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+*.lcov
+htmlcov/
+
+# 4. Archivos Generados, Minificados y Binarios
+*.min.js
+*.min.css
+*.map
+*.wasm
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.avif
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# 5. Variables de Entorno y Secretos (Seguridad Crítica)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# 6. Cachés, Logs y Sistema Operativo
+.cache/
+.turbo/
+.temp/
+.tmp/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+.DS_Store
+Thumbs.db
+
+# 7. Salida Interna de Graphify
+graphify-out/

@@ -1,0 +1,15 @@
+{
+  "artifact_type": "routing-and-rendering",
+  "default_rendering_mode": "csr",
+  "routes": [
+    {
+      "path": "/dashboard/analytics",
+      "user_flow_id": "UF-DASH-001",
+      "layout": "DashboardShell",
+      "rendering_mode": "csr",
+      "auth_guard": "authenticated:analyst",
+      "error_boundary": "AnalyticsErrorBoundary",
+      "seo_required": false
+    }
+  ]
+}

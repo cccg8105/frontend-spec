@@ -1,0 +1,27 @@
+---
+description: "Reglas obligatorias de frontend-spec para Cursor (Dos Velocidades, FSM, tokens claro/oscuro, RFC 7807, Brownfield JIT y Graphify)."
+globs: src/**/*, app/**/*, pages/**/*, components/**/*, docs/**/*
+alwaysApply: true
+---
+
+<!-- FRONTEND-SPEC:START -->
+# frontend-spec — Reglas Operativas para Cursor
+
+> Bloque gestionado por `frontend-spec`. No modifiques manualmente entre `FRONTEND-SPEC:START` y `FRONTEND-SPEC:END`.
+
+## 1. Gatekeeper de Dos Velocidades
+- **PROHIBIDO** editar codigo fuente (`src/`, `app/`, `pages/`, `components/`) sin un `REQ-UI-*` activo en `docs/backlog/pending.md` aprobado por el usuario.
+- **Carril Completo (`MAJOR` / `MINOR`):** Usa `/ui-grill` -> `UF-*` + Matriz FSM (`ui-contracts-guidelines.md`) -> Tokens / Rutas / Componentes / Estado -> Test *Spec-First* -> `docs/backlog/pending.md` -> Gatekeeper `/ui-plan`.
+- **Fast-Track (`PATCH`):** Usa `Referencia Funcional: N/A (PATCH / Fast-Track)` para fixes visuales con tokens existentes, a11y o bugs locales; exige test de regresion en rojo y confirmacion breve.
+
+## 2. Estandares de Diseno, FSM y Estado
+- **Contexto O(1):** Lee `docs/functional/index.md`, `docs/design/index.md`, `docs/technical/index.md` y `graphify-out/` (si existe) antes de abrir multiples archivos.
+- **Entrevista (`AskQuestion`):** Aplica *"Codigo, Tokens y Grafo primero, humano despues"*; agrupa de 2 a 4 decisiones concretas por tarjeta interactiva mediante `AskQuestion` con la opcion recomendada primero.
+- **Tokens Claro/Oscuro:** Prohibido quemar colores o metricas CSS; consume unicamente `docs/design/tokens-and-themes.md`.
+- **Contratos HTTP:** Usa FSM `stateDiagram-v2` cuando aplique `ui-contracts-guidelines.md`, manejo RFC 7807 (`application/problem+json`), `Idempotency-Key` en mutaciones criticas y mocks MSW.
+
+## 3. Fronteras, Brownfield Just-In-Time y Graphify
+- **Fronteras Estrictas:** Modifica unicamente archivos declarados en `docs/backlog/pending.md` y manten `docs/backlog/audit-proposals.md` en solo lectura salvo promocion explicita.
+- **Brownfield *Just-In-Time*:** Documenta el flujo *As-Is* antes de evolucionar modulos legados registrados en `docs/functional/index.md`; usa `/ui-bootstrap` para adoptar repositorios existentes.
+- **Verificacion y Graphify:** Ejecuta tests unitarios + `axe-core` y E2E + viewports cuando corresponda, manten tablas *Rolling Window* con maximo 3 filas y ejecuta `graphify update` respetando `.graphifyignore`.
+<!-- FRONTEND-SPEC:END -->

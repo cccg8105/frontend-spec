@@ -1,0 +1,25 @@
+{
+  "artifact_type": "tech-stack",
+  "ecosystem": "react-vite",
+  "core": {
+    "framework": "React",
+    "meta_framework": "Vite",
+    "language": "TypeScript",
+    "styling": "Tailwind CSS",
+    "ui_primitives": "shadcn/ui + Radix",
+    "server_state": "TanStack Query",
+    "testing_framework": "Vitest",
+    "e2e_framework": "Playwright"
+  },
+  "performance_budgets": {
+    "lcp": "<= 2.5s",
+    "inp": "<= 200ms",
+    "cls": "<= 0.1",
+    "bundle_max_kb": 200
+  },
+  "security_policies": {
+    "xss": "Sin dangerouslySetInnerHTML ni URLs javascript:",
+    "token_storage": "Cookies HttpOnly y SameSite gestionadas por backend",
+    "csp": "default-src self; script-src self; object-src none"
+  }
+}

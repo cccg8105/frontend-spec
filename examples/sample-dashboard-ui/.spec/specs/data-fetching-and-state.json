@@ -1,0 +1,16 @@
+{
+  "artifact_type": "data-fetching-and-state",
+  "server_state_tool": "TanStack Query",
+  "client_state_tool": "React state",
+  "url_state_strategy": "query-params",
+  "mock_strategy": "msw",
+  "rfc7807_error_mappings": [
+    { "status_code": "422", "ui_action": "Mostrar detail RFC 7807 y preservar filtro", "preserves_form_draft": true },
+    { "status_code": "500", "ui_action": "Renderizar alerta con boton Reintentar", "preserves_form_draft": true }
+  ],
+  "idempotency_policy": {
+    "header_name": "Idempotency-Key",
+    "strategy": "Generar UUID v4 por clic y bloquear boton mientras esta pendiente",
+    "critical_mutations": ["POST /api/v1/analytics/exports"]
+  }
+}

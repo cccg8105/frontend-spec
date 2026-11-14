@@ -1,0 +1,54 @@
+# ==============================================================================
+# frontend-spec v1.0.0 - Configuración del Proyecto (Multi-Ecosistema)
+# ==============================================================================
+
+framework: frontend-spec
+version: "1.0.0"
+project_name: "sample-dashboard-ui"
+
+# Perfil de ecosistema frontend detectado o seleccionado en init
+ecosystem:
+  name: "react-vite" # react-vite | nextjs | vue-vite | nuxt | sveltekit | astro | angular
+  framework: "React"
+  meta_framework: "Vite"
+  language: "TypeScript"
+  package_manager: "npm"
+  styling: "Tailwind CSS"
+  ui_primitives: "shadcn/ui + Radix"
+  state_server: "TanStack Query"
+  unit_test_runner: "Vitest"
+  testing_library: "@testing-library/react"
+  e2e_runner: "Playwright"
+  a11y_tool: "axe-core"
+  src_dir: "src"
+  routes_dir: "src/pages"
+  test_pattern: "tests/unit/{slug}.test.tsx"
+
+# Estrategia de versionamiento del proyecto consumidor: semver | calver | sequential
+versioning_scheme: "semver"
+current_version: "1.1.0"
+current_milestone: "v1.2.0"
+
+version_file:
+  path: "package.json"
+  format: "json"
+  field: "version"
+
+# Dominios UI / funcionales del proyecto
+domains:
+  - analytics
+  - mocks
+
+harnesses:
+  - antigravity
+  - cursor
+  - claude
+  - windsurf
+
+# Rutas estándar del framework
+paths:
+  functional_docs: "docs/functional"
+  design_docs: "docs/design"
+  technical_docs: "docs/technical"
+  backlog: "docs/backlog"
+  templates: ".spec/templates"

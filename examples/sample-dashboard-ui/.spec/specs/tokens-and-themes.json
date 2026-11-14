@@ -1,0 +1,23 @@
+{
+  "artifact_type": "design-tokens",
+  "theme_modes": ["light", "dark"],
+  "semantic_colors": [
+    { "token": "color-bg-base", "light_hex": "#F8F9FA", "dark_hex": "#0D1117", "role": "Fondo principal" },
+    { "token": "color-surface", "light_hex": "#FFFFFF", "dark_hex": "#161B22", "role": "Tarjetas y paneles" },
+    { "token": "color-primary", "light_hex": "#0F52BA", "dark_hex": "#388BFD", "role": "Accion primaria" },
+    { "token": "color-text-main", "light_hex": "#1A202C", "dark_hex": "#F0F6FC", "role": "Texto principal" },
+    { "token": "color-border", "light_hex": "#E2E8F0", "dark_hex": "#30363D", "role": "Bordes y divisores" },
+    { "token": "color-danger", "light_hex": "#DC2626", "dark_hex": "#F85149", "role": "Errores y alertas" }
+  ],
+  "typography": {
+    "display_font": "Plus Jakarta Sans",
+    "body_font": "Plus Jakarta Sans",
+    "mono_font": "JetBrains Mono",
+    "scale": ["12px", "14px", "16px", "20px", "24px"]
+  },
+  "breakpoints": [
+    { "name": "sm", "min_width": "640px" },
+    { "name": "md", "min_width": "768px" },
+    { "name": "lg", "min_width": "1024px" }
+  ]
+}
