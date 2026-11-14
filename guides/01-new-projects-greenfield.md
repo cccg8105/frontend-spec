@@ -17,7 +17,7 @@ Este flujo es el **recomendado** para proyectos desde cero porque evita que los 
 
 ### Paso 1: Generar el scaffold y fijar el commit base en Git
 
-Genera el proyecto con la herramienta oficial de tu framework e inicializa Git **antes** de instalar `frontend-spec`:
+Antes de iniciar, verifica en tu terminal los prerrequisitos (`git --version`, `python --version` y, si tu repositorio vivirá en GitHub con monitoreo de Dependabot, `gh auth status`). Luego genera el proyecto con la herramienta oficial de tu framework e inicializa Git **antes** de instalar `frontend-spec`:
 
 ```bash
 # Ejemplo con React + Vite + TypeScript

@@ -13,7 +13,7 @@ Esta skill gobierna el ciclo completo de ingeniería frontend asistida por agent
 | Impacto (`versioning-strategy.md`) | Carril | Ceremonia Mínima Exigida |
 | :--- | :--- | :--- |
 | **`MAJOR` / `MINOR`** (Nuevas vistas, rutas, componentes complejos o cambio de tokens) | **Carril Completo** | {{HARNESS_INTERVIEW_TRIGGER}} -> Flujo UX (`UF-*`) + Matriz FSM (`ui-contracts-guidelines.md`) -> Tokens/Rutas/Componentes/Estado -> Test *Spec-First* (`_template_ui_test.md` / `_template_e2e_test.md`) -> `pending.md` -> Gatekeeper `/plan`. |
-| **`PATCH`** (Ajuste cosmético con tokens existentes, fix a11y o bug de estado local sin romper rutas/props/API) | **Fast-Track** | `Referencia Funcional: N/A (PATCH / Fast-Track)`. Bloque compacto en `pending.md` -> `/diagnose` + test de regresión en rojo -> confirmación breve -> fix mínimo. |
+| **`PATCH`** (Ajuste cosmético con tokens existentes, fix a11y, bug local o remediación Dependabot compatible sin romper rutas/props/API) | **Fast-Track** | `Referencia Funcional: N/A (PATCH / Fast-Track)`. Bloque compacto en `pending.md` (`REQ-UI-SEC-*` si es seguridad) -> `/diagnose` (o `gh` + auditor local) + test de regresión en rojo -> confirmación breve -> fix mínimo. |
 
 ## Protocolo Operativo Estándar
 1. **Contexto Selectivo O(1):** Consulta únicamente `docs/functional/index.md`, `docs/design/index.md` y `docs/technical/index.md` para cargar solo los archivos implicados. Si existe `graphify-out/`, consulta dependencias antes de diseñar.
@@ -26,4 +26,4 @@ Esta skill gobierna el ciclo completo de ingeniería frontend asistida por agent
 4. **Historial Rolling Window:** Mantén máximo **3 filas** en `## Historial de Revisiones` de cada documento.
 5. **Fronteras Estrictas y Solo Lectura de Auditoría:** Toca exclusivamente archivos declarados `[NEW]`/`[MODIFY]`/`[DELETE]` en `pending.md`. Trata `docs/backlog/audit-proposals.md` como solo lectura salvo promoción explícita.
 6. **Expansión Progresiva Brownfield:** Si el cambio toca una ruta/módulo en `Módulos / Rutas Legadas Detectadas` dentro de `docs/functional/index.md`, documenta primero su flujo *As-Is* antes de planificar la evolución *To-Be*.
-7. **Verificación y Cierre:** Ejecuta tests unitarios (`axe-core`) y Playwright E2E + viewports cuando aplique, realiza `/code-review` del diff, actualiza índices y ejecuta `graphify update` respetando `.graphifyignore`.
+7. **Verificación, Seguridad (`gh`) y Cierre:** Ejecuta tests unitarios (`axe-core`) y Playwright E2E + viewports cuando aplique, diagnostica alertas de Dependabot vía `gh api "repos/{owner}/{repo}/dependabot/alerts?state=open"` y `fspec check --security` cuando haya cambios en dependencias (escalando upgrades `MAJOR` con impacto en `src/` a `/plan`), realiza `/code-review` del diff, actualiza índices y ejecuta `graphify update` respetando `.graphifyignore`.

@@ -28,6 +28,7 @@ ecosystem: "{{ECOSYSTEM_NAME}}"
 ## 3. Políticas de Seguridad, i18n y Observabilidad
 - **Prevención XSS:** Prohibido renderizar HTML sin sanitización previa (`DOMPurify`) o aceptar URLs `javascript:`.
 - **Tokens y Sesión:** Priorizar cookies `HttpOnly; Secure; SameSite` para credenciales sensibles; nunca almacenar secretos en `localStorage`.
+- **Higiene de Dependencias y Dependabot (`gh` CLI):** Diagnosticar vulnerabilidades abiertas con `gh api "repos/{owner}/{repo}/dependabot/alerts?state=open"` (`fspec check --security`) y auditor local del gestor de paquetes, aplicando parches compatibles bajo trazabilidad `REQ-UI-SEC-*`.
 - **i18n:** Centralizar literales de usuario (claves de diccionario o módulo único de copy según necesidad de idiomas del producto).
 - **Observabilidad:** Reportar fallos no capturados desde Error Boundaries sin registrar PII ni cabeceras de autorización.
 

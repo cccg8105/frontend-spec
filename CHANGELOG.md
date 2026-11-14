@@ -22,6 +22,17 @@ Las versiones del framework se estructuran bajo `MAJOR.MINOR.PATCH` (mientras el
 
 ---
 
+## [1.3.0] - 2026-11-14
+
+### Added
+- Protocolo estandarizado de **Diagnóstico y Remediación de Vulnerabilidades (Dependabot + GitHub CLI `gh`)**:
+  - Prerrequisito explícito de instalación y autenticación de **GitHub CLI (`gh`)** (`gh auth login`, scope `security_events`) en `README.md`, `guides/01-new-projects-greenfield.md` y `guides/04-cli-harnesses-and-contracts.md`.
+  - Flujo de 3 rutas documentado en `guides/03-daily-workflow-two-speeds.md`, `agent-prompts/AGENTS.md`, reglas multi-harness (`harnesses/`), skills (`frontend-spec`, `webapp-testing`), comandos/workflows (`/ui-plan`, `/ui-resolve`, `/ui-execute`) y `tech-stack.md`: **Ruta 1 (`PATCH` Fast-Track bajo `REQ-UI-SEC-*`)** para parches compatibles y `overrides`, **Ruta 2 (`MINOR`/`MAJOR` Carril Completo)** con aprobación explícita ante *breaking changes* en `src/`, y **Ruta 3** para alertas sin parche o dev-tooling no expuesto.
+  - Nuevo flag opt-in `--security` en `fspec check` (`audit_github_dependabot_alerts()` en `check_cmd.py`), que valida `gh` en PATH, consulta `repos/{owner}/{repo}/dependabot/alerts?state=open&per_page=100`, reporta versión parcheada (`first_patched_version`) y bloquea con código `1` ante vulnerabilidades `critical` o `high` abiertas.
+- Prueba unitaria `test_check_security_dependabot_gh_cli` en `cli/tests/test_validator_and_negative.py` (ampliando la suite a `25` casos en `6` módulos).
+
+---
+
 ## [1.2.0] - 2026-11-14
 
 ### Added

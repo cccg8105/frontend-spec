@@ -39,6 +39,7 @@ artifact_type: tech-stack
 - **Prevención XSS:** Prohibido inyectar HTML crudo (`dangerouslySetInnerHTML`, `v-html`, `{@html}`, `[innerHTML]`) sin sanitización verificada (`DOMPurify`) y validación de esquemas URL (`https://` o ruta relativa; bloquear `javascript:`).
 - **Almacenamiento de Credenciales:** Prohibido persistir secretos, refresh tokens o credenciales privilegiadas en `localStorage`/`sessionStorage` si el backend provee cookies `HttpOnly; Secure; SameSite`.
 - **Content Security Policy (CSP):** Documentar orígenes permitidos de scripts, fuentes, imágenes y `connect-src`.
+- **Higiene de Dependencias y Dependabot (`gh` CLI):** Diagnosticar vulnerabilidades abiertas con `gh api "repos/{owner}/{repo}/dependabot/alerts?state=open"` (`fspec check --security`) y auditor local del gestor de paquetes, aplicando parches compatibles bajo trazabilidad `REQ-UI-SEC-*`.
 - **Internacionalización (i18n):** Definir explícitamente si el proyecto externaliza literales mediante diccionarios/claves (`react-i18next`, `vue-i18n`, `@inlang/paraglide-js`, Angular `@angular/localize`) o si opera en idioma único con microcopy centralizado.
 - **Error Boundaries y Telemetría:** Toda sección crítica debe estar envuelta en un Error Boundary que reporte fallos estructurados sin incluir PII ni tokens en logs del cliente.
 

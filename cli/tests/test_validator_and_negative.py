@@ -4,13 +4,14 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import unittest.mock as mock
 from pathlib import Path
 
 CLI_DIR = Path(__file__).resolve().parent.parent
 if str(CLI_DIR) not in sys.path:
     sys.path.insert(0, str(CLI_DIR))
 
-from frontend_spec.commands.check_cmd import run_check
+from frontend_spec.commands.check_cmd import audit_github_dependabot_alerts, run_check
 from frontend_spec.commands.init_cmd import run_init
 from frontend_spec.commands.new_req_cmd import run_new_req
 from frontend_spec.validator.schema_validator import count_rolling_history_rows
@@ -184,6 +185,71 @@ class TestValidatorAndNegative(unittest.TestCase):
             encoding="utf-8",
         )
         self.assertFalse(run_check(proj))
+
+    def test_check_security_dependabot_gh_cli(self):
+        proj = self.tmp / "sec-audit-app"
+        run_init(proj, harness="antigravity", ecosystem="react-vite", mode="greenfield")
+
+        # 1. Sin gh instalado en PATH: emite advertencia de prerrequisito sin romper run_check
+        with mock.patch("frontend_spec.commands.check_cmd.shutil.which", return_value=None):
+            sec_errs, sec_warns, sec_infos = audit_github_dependabot_alerts(proj)
+            self.assertEqual(sec_errs, [])
+            self.assertEqual(len(sec_warns), 1)
+            self.assertIn("GitHub CLI (gh)", sec_warns[0])
+            self.assertEqual(sec_infos, [])
+            self.assertTrue(run_check(proj, check_security=True))
+
+        # 2. gh disponible y 0 alertas abiertas
+        empty_proc = subprocess.CompletedProcess(
+            args=["gh"], returncode=0, stdout="[]", stderr=""
+        )
+        with mock.patch("frontend_spec.commands.check_cmd.shutil.which", return_value="gh"), mock.patch(
+            "frontend_spec.commands.check_cmd.subprocess.run", return_value=empty_proc
+        ):
+            sec_errs, sec_warns, sec_infos = audit_github_dependabot_alerts(proj)
+            self.assertEqual(sec_errs, [])
+            self.assertEqual(sec_warns, [])
+            self.assertTrue(any("0 alertas de seguridad abiertas" in msg for msg in sec_infos))
+            self.assertTrue(run_check(proj, check_security=True))
+
+        # 3. Alertas high y medium detectadas: high bloquea, medium advierte
+        alerts_payload = [
+            {
+                "number": 12,
+                "security_advisory": {"severity": "high", "ghsa_id": "GHSA-xxxx-yyyy-zzzz"},
+                "security_vulnerability": {
+                    "severity": "high",
+                    "first_patched_version": {"identifier": "5.4.11"},
+                },
+                "dependency": {"package": {"name": "vite"}},
+            },
+            {
+                "number": 15,
+                "security_advisory": {"severity": "medium", "ghsa_id": "GHSA-aaaa-bbbb-cccc"},
+                "security_vulnerability": {
+                    "severity": "medium",
+                    "first_patched_version": {"identifier": "8.4.49"},
+                },
+                "dependency": {"package": {"name": "postcss"}},
+            },
+        ]
+        alerts_proc = subprocess.CompletedProcess(
+            args=["gh"],
+            returncode=0,
+            stdout=json.dumps(alerts_payload),
+            stderr="",
+        )
+        with mock.patch("frontend_spec.commands.check_cmd.shutil.which", return_value="gh"), mock.patch(
+            "frontend_spec.commands.check_cmd.subprocess.run", return_value=alerts_proc
+        ):
+            sec_errs, sec_warns, _ = audit_github_dependabot_alerts(proj)
+            self.assertEqual(len(sec_errs), 1)
+            self.assertIn("vite", sec_errs[0])
+            self.assertIn("5.4.11", sec_errs[0])
+            self.assertIn("REQ-UI-SEC-*", sec_errs[0])
+            self.assertEqual(len(sec_warns), 1)
+            self.assertIn("postcss", sec_warns[0])
+            self.assertFalse(run_check(proj, check_security=True))
 
 
 if __name__ == "__main__":

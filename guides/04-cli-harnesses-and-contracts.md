@@ -6,7 +6,32 @@ Esta guía concentra la referencia técnica completa de instalación, subcomando
 
 ## 1. Instalación y Actualización
 
-`frontend-spec` utiliza Python estándar `>=3.9` sin dependencias externas en tiempo de ejecución:
+### Prerrequisitos del Sistema y GitHub CLI (`gh`)
+
+1. **Python `>=3.9`:** `frontend-spec` utiliza exclusivamente la biblioteca estándar de Python sin dependencias externas en tiempo de ejecución.
+2. **Git:** Necesario para inicialización del historial y la activación del hook `.git/hooks/pre-commit`.
+3. **GitHub CLI (`gh`) — Prerrequisito para Diagnóstico de Vulnerabilidades (Dependabot):** Para que los agentes de IA y `fspec check --security` puedan consultar alertas de seguridad de GitHub y PRs de Dependabot automáticamente, instala `gh` y autentica tu sesión:
+
+```bash
+# Windows (winget)
+winget install --id GitHub.cli
+
+# macOS (Homebrew)
+brew install gh
+
+# Debian / Ubuntu Linux
+sudo apt update && sudo apt install gh
+
+# Autenticación y verificación de permisos sobre alertas de seguridad
+gh auth login
+gh auth status
+# Si tu token actual no tiene permiso para alertas de Dependabot en repos privados/propios:
+gh auth refresh -s security_events
+# Prueba rápida dentro del repositorio del proyecto:
+gh api "repos/{owner}/{repo}/dependabot/alerts?state=open&per_page=1"
+```
+
+### Instalación del CLI (`frontend-spec` / `fspec`)
 
 ```bash
 # Instalación global recomendada desde GitHub (uv)
@@ -39,7 +64,7 @@ También dispone de los lanzadores locales [`fspec`](../fspec) y [`fspec.ps1`](.
 | `fspec bootstrap [ruta]` | `--dir`, `--mode {auto,full,progressive}`, `--reset` | Escanea un proyecto existente (Brownfield), detecta Storybook e inventaria `*.stories.*`, actualiza `tech-stack.md` / `.spec/config.yaml` y genera `.spec/bootstrap-report.md` preservando casillas `- [x]`. |
 | `fspec req:new [titulo]` | `--dir`, `--domain`, `--priority {P1,P2,P3}`, `--impact {MAJOR,MINOR,PATCH}`, `--version`, `--uf`, `--tokens`, `--fast-track`, `--from-audit` | Crea bloques `REQ-UI-*` en `docs/backlog/pending.md` (o promueve hallazgos `AUDIT-UI-*`), sugiere FSM según dominio y sincroniza índices. |
 | `fspec sync [ruta]` | `--dir`, `--export-tokens` | Reconstruye de forma idempotente las tablas y resúmenes en `docs/backlog/index.md`, `docs/functional/index.md` y `docs/design/index.md`; con `--export-tokens` genera `.spec/specs/design.tokens.json` en formato W3C DTCG. |
-| `fspec check [ruta]` | `--dir`, `--staged`, `--strict-tokens` | Valida enlaces relativos, `artifact_type`, sintaxis Mermaid, tokens, sidecars `*.tokens.json` (W3C DTCG), Rolling Window (`<= 3` filas en `## Historial de Revisiones`), esquemas `.spec/specs/*.json` contra Draft-07, consistencia de `Referencia Funcional` no vacía en no-`PATCH`, commits staged (`--staged`) y hexadecimales quemados en componentes UI (`--strict-tokens`). |
+| `fspec check [ruta]` | `--dir`, `--staged`, `--strict-tokens`, `--security` | Valida enlaces relativos, `artifact_type`, sintaxis Mermaid, tokens, sidecars `*.tokens.json` (W3C DTCG), Rolling Window (`<= 3` filas en `## Historial de Revisiones`), esquemas `.spec/specs/*.json` contra Draft-07, consistencia de `Referencia Funcional` no vacía en no-`PATCH`, commits staged (`--staged`), hexadecimales quemados (`--strict-tokens`) y alertas abiertas de Dependabot en GitHub vía `gh` CLI (`--security`, bloqueante ante `critical`/`high`). |
 | `fspec resolve <REQ-ID>` | `--dir`, `--bump`, `--force-version` | Archiva un requerimiento en `docs/backlog/changelog.md` manteniendo Rolling Window y actualiza opcionalmente la versión en el manifiesto (`package.json` y `.spec/config.yaml`) bloqueando downgrades salvo `--force-version`. |
 
 ---
@@ -64,7 +89,7 @@ frontend-spec/
 │
 ├── cli/                                      # Motor CLI determinista en biblioteca estándar Python
 │   ├── main.py                               # Punto de entrada CLI UTF-8
-│   ├── tests/                                # Matriz modular de 6 suites (24 pruebas unitarias, integración y E2E)
+│   ├── tests/                                # Matriz modular de 6 suites (25 pruebas unitarias, integración y E2E)
 │   └── frontend_spec/
 │       ├── commands/                         # 7 subcomandos: init, update, bootstrap, req:new, sync, check, resolve
 │       ├── detector/                         # Detectores multi-ecosistema (10 perfiles + Storybook) y version_extractor

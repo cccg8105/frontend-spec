@@ -1,4 +1,4 @@
-# frontend-spec v1.2.0
+# frontend-spec v1.3.0
 
 > **Framework y CLI de Especificación Viva para Ingeniería Frontend Multi-Ecosistema asistida por Agentes de IA (Spec-Driven Frontend)**
 
@@ -7,20 +7,23 @@
 1. **Multi-Ecosistema con Abstracción Única:** Contratos portables de flujos, componentes (`Props`/Slots/FSM/Storybook CSF 3.0), rutas y testing.
 2. **Diseño Intencional Anti-AI Slop:** Tipografía con carácter, paleta acotada, asimetría espacial y respeto a `prefers-reduced-motion`.
 3. **Tokens Ejecutables Claro/Oscuro + W3C DTCG:** Paleta simétrica, exportación estandarizada `*.tokens.json` (`fspec sync --export-tokens`) y bloqueo opcional de hexadecimales quemados (`fspec check --strict-tokens`).
-4. **Contratos Draft-07 y Puente Backend:** Validación sin dependencias (`schemas/`) para flujos UX, estado servidor, RFC 7807, `Idempotency-Key`, MSW, Web Vitals y XSS/CSP.
+4. **Contratos Draft-07, Seguridad y Puente Backend:** Validación sin dependencias (`schemas/`) para flujos UX, RFC 7807, `Idempotency-Key`, MSW, Web Vitals, XSS/CSP y diagnóstico de vulnerabilidades de Dependabot con GitHub CLI (`gh` / `fspec check --security`).
 5. **Gatekeeper de Dos Velocidades:** Rigor completo para cambios `MAJOR`/`MINOR` y carril ligero *Fast-Track* para `PATCH`.
 
 ---
 
-## Instalación Rápida
+## Prerrequisitos e Instalación Rápida
 
-Requiere únicamente Python `>=3.9` (sin dependencias externas en tiempo de ejecución):
+Antes de instalar y operar `frontend-spec`, asegúrate de contar con los siguientes prerrequisitos en tu entorno:
+
+- **Python `>=3.9`** (solo biblioteca estándar; sin dependencias externas en tiempo de ejecución).
+- **GitHub CLI (`gh`)** instalado y autenticado (`gh auth login` con acceso a alertas de seguridad `security_events`), **prerrequisito** para el diagnóstico y remediación asistida de vulnerabilidades de Dependabot (`fspec check --security` y protocolos de seguridad del agente).
 
 ```bash
 uv tool install git+https://github.com/cccg8105/frontend-spec.git
 ```
 
-Consulta [`guides/04-cli-harnesses-and-contracts.md`](guides/04-cli-harnesses-and-contracts.md) para opciones con `pipx`/`uvx`, actualización con `fspec update` o instalación local editable.
+Consulta [`guides/04-cli-harnesses-and-contracts.md`](guides/04-cli-harnesses-and-contracts.md) para instalar GitHub CLI (`gh`), opciones con `pipx`/`uvx`, actualización con `fspec update` o instalación local editable.
 
 ---
 
@@ -41,4 +44,4 @@ Elige la guía operativa según el estado actual de tu repositorio:
 
 * **[Guía 04: CLI, Harnesses, Estructura y Contratos (`v1.0.0+`)](guides/04-cli-harnesses-and-contracts.md):** Catálogo de los 7 subcomandos (`init`, `update`, `bootstrap`, `req:new`, `sync`, `check`, `resolve`), estructura del repositorio y del proyecto consumidor, coexistencia en monorepos (`FRONTEND-SPEC:START/END`), los 8 JSON Schemas Draft-07 y contratos congelados.
 * **[Proyecto Piloto (`examples/sample-dashboard-ui/`)](examples/sample-dashboard-ui/):** Referencia completa en React + Vite + TypeScript + Tailwind CSS + TanStack Query + MSW + Vitest + Playwright validada sin advertencias con `fspec check`.
-* **[Historial de Versiones (`CHANGELOG.md`)](CHANGELOG.md):** Registro SemVer 2.0.0 del framework (`v0.1.0` -> `v1.2.0`).
+* **[Historial de Versiones (`CHANGELOG.md`)](CHANGELOG.md):** Registro SemVer 2.0.0 del framework (`v0.1.0` -> `v1.3.0`).

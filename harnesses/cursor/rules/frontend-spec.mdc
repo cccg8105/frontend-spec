@@ -23,5 +23,6 @@ alwaysApply: true
 ## 3. Fronteras, Brownfield Just-In-Time y Graphify
 - **Fronteras Estrictas:** Modifica unicamente archivos declarados en `docs/backlog/pending.md` y manten `docs/backlog/audit-proposals.md` en solo lectura salvo promocion explicita.
 - **Brownfield *Just-In-Time*:** Documenta el flujo *As-Is* antes de evolucionar modulos legados registrados en `docs/functional/index.md`; usa `/ui-bootstrap` para adoptar repositorios existentes.
+- **Seguridad y Dependabot (`gh` CLI):** Ante alertas de vulnerabilidades en paquetes, verifica `gh auth status`, diagnostica con `gh api "repos/{owner}/{repo}/dependabot/alerts?state=open"` (mas `gh pr list --author "app/dependabot"` y auditor local `npm/pnpm audit`). Tramita parches compatibles o `overrides` de lockfile por **Fast-Track (`PATCH`)** bajo `REQ-UI-SEC-*` y valida con `fspec check --security`; si exige un upgrade `MAJOR` con cambios en `src/`, escala a `/ui-plan`.
 - **Verificacion y Graphify:** Ejecuta tests unitarios + `axe-core` y E2E + viewports cuando corresponda, manten tablas *Rolling Window* con maximo 3 filas y ejecuta `graphify update` respetando `.graphifyignore`.
 <!-- FRONTEND-SPEC:END -->

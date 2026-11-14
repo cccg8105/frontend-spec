@@ -13,5 +13,5 @@ description: "Implementa un REQ-UI-* aprobado en docs/backlog/pending.md respeta
    - Usa exclusivamente semantic design tokens de `docs/design/tokens-and-themes.md` (modo claro y oscuro).
    - Respeta FSM e invariantes, mapeo RFC 7807, cabecera `Idempotency-Key` en mutaciones criticas, prevencion XSS y restauracion de foco.
 4. **Verificacion y Cierre:**
-   - Ejecuta lint, typecheck, tests unitarios + `axe-core` y Playwright E2E (`390x844`, `1440x900`) cuando corresponda.
+   - Ejecuta lint, typecheck, tests unitarios + `axe-core` y Playwright E2E (`390x844`, `1440x900`) cuando corresponda. Si el requerimiento cubre dependencias o Dependabot (`REQ-UI-SEC-*`), valida auditor local y `fspec check --security`.
    - Marca `[x]` los criterios, mueve el `REQ-UI-*` a `docs/backlog/changelog.md`, actualiza indices/*Rolling Window* (maximo 3 filas) y ejecuta `graphify update`.

@@ -129,6 +129,11 @@ def main() -> None:
         action="store_true",
         help="Detecta colores hexadecimales quemados (#RRGGBB) en componentes UI fuera de tokens",
     )
+    chk_p.add_argument(
+        "--security",
+        action="store_true",
+        help="Consulta alertas abiertas de Dependabot en GitHub mediante GitHub CLI (gh)",
+    )
     chk_p.add_argument("--dir", default=".", help="Directorio del proyecto")
 
     res_p = subparsers.add_parser(
@@ -195,6 +200,7 @@ def main() -> None:
             project_root=project_dir,
             check_staged=args.staged,
             strict_tokens=args.strict_tokens,
+            check_security=args.security,
         )
         sys.exit(0 if ok else 1)
     elif args.command == "resolve":

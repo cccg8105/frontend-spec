@@ -70,7 +70,49 @@ Aplica cuando corriges estilos usando tokens existentes, bugs de estado local o 
 
 ---
 
-## 3. Equivalencia de Comandos por Harness
+## 3. Diagnóstico y Remediación de Vulnerabilidades (Dependabot y `gh` CLI)
+
+Cuando GitHub Dependabot detecta paquetes vulnerables, el framework estandariza un flujo seguro para diagnosticar alertas reales en terminal sin romper la arquitectura ni saltar el Gatekeeper.
+
+### Prerrequisito Obligatorio y Comandos de Diagnóstico
+
+El usuario debe tener instalado y autenticado **GitHub CLI (`gh`)** (ver [Guía 04 — Prerrequisitos](04-cli-harnesses-and-contracts.md#1-instalación-y-actualización)). Con `gh` activo, el agente o el propio CLI ejecutan el pre-vuelo y extraen el diagnóstico estructurado:
+
+```bash
+# 1. Pre-vuelo de sesión y remoto
+gh auth status
+gh repo view --json nameWithOwner -q .nameWithOwner
+
+# 2. Listar alertas abiertas de Dependabot (severidad, CVE/GHSA y first_patched_version)
+gh api "repos/{owner}/{repo}/dependabot/alerts?state=open&per_page=100"
+
+# 3. Inspeccionar PRs abiertos por Dependabot y checks de CI
+gh pr list --author "app/dependabot" --state open
+
+# 4. Atajo automatizado desde el CLI de frontend-spec
+fspec check --security
+```
+
+*(Si `gh` no está autenticado o no existe remoto en GitHub, el agente advierte del prerrequisito y recurre al auditor local del gestor de paquetes: `npm audit`, `pnpm audit` o `yarn npm audit`).*
+
+### Tres Rutas de Decisión
+
+1. **Ruta 1 — Parche SemVer compatible o dependencia transitiva (`PATCH` Fast-Track):**
+   - `first_patched_version` pertenece al mismo rango mayor o puede fijarse mediante `overrides` / `resolutions` sin cambiar llamadas en `src/`.
+   - Flujo del agente:
+     ```bash
+     fspec req:new "Remediacion Dependabot: actualizar vite a 5.4.11" --domain SEC --impact PATCH
+     ```
+     Declara `package.json` y el lockfile (`package-lock.json` / `pnpm-lock.yaml` / `yarn.lock`) en `Fronteras y Artefactos`, aplica el ajuste mínimo, valida que el auditor local quede en cero + suite de tests + `fspec check --security` y cierra con `fspec resolve REQ-UI-SEC-001 --bump`.
+2. **Ruta 2 — Actualización `MAJOR` con *breaking changes* (`MINOR` / `MAJOR` Carril Completo):**
+   - El parche exige saltar de versión mayor en una dependencia crítica (ej. framework, router, librerías UI) alterando archivos en `src/`, rutas o `docs/technical/tech-stack.md`.
+   - Flujo del agente: detiene cualquier modificación directa en `src/`, analiza impacto con `graphify` (si está activo), sincroniza versiones si corresponde (`fspec update --refresh-stack`) y presenta un plan formal (`/ui-plan` o `/plan`) solicitando tu aprobación explícita.
+3. **Ruta 3 — Sin parche disponible o exclusivo de tooling de desarrollo:**
+   - Informa el detalle exacto (GHSA, cadena de dependencia, exposición real) y pregunta al usuario si desea aplicar un *workaround* o descartar la alerta en GitHub con motivo documentado (`tolerable_risk` o `inaccurate`).
+
+---
+
+## 4. Equivalencia de Comandos por Harness
 
 `frontend-spec` adapta los disparadores conversacionales a la interfaz nativa de cada herramienta:
 

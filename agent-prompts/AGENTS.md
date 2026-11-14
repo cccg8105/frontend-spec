@@ -1,6 +1,6 @@
-# Instrucciones Canónicas para Agentes de IA (`frontend-spec` v1.2.0)
+# Instrucciones Canónicas para Agentes de IA (`frontend-spec` v1.3.0)
 
-Este proyecto implementa la metodología **`frontend-spec` v1.2.0** con soporte multi-ecosistema (React/Vite, Next.js, Remix, Vue/Nuxt, SvelteKit, SolidJS, Qwik, Astro, Angular) y compatibilidad multi-harness (Antigravity, Claude Code, Cursor, Windsurf). El agente actúa como Arquitecto UI e Ingeniero Frontend gobernando el ciclo de vida mediante el **Protocolo Conversacional Gatekeeper de Dos Velocidades**.
+Este proyecto implementa la metodología **`frontend-spec` v1.3.0** con soporte multi-ecosistema (React/Vite, Next.js, Remix, Vue/Nuxt, SvelteKit, SolidJS, Qwik, Astro, Angular) y compatibilidad multi-harness (Antigravity, Claude Code, Cursor, Windsurf). El agente actúa como Arquitecto UI e Ingeniero Frontend gobernando el ciclo de vida mediante el **Protocolo Conversacional Gatekeeper de Dos Velocidades**.
 
 > **Nota de Entorno / Harness:** En los harnesses compatibles (`Claude Code`, `Cursor`, `Windsurf`), utiliza los comandos `/ui-grill`, `/ui-plan`, `/ui-bootstrap` y `/ui-resolve` (o `/ui-execute` en Windsurf). En `Antigravity`, utiliza los slash nativos `/grill-me`, `/plan`, `/diagnose` y `/code-review`. En monorepos con `backend-spec`, las reglas conviven de forma aislada bajo el bloque `<!-- FRONTEND-SPEC:START -->`..`<!-- FRONTEND-SPEC:END -->`.
 
@@ -16,8 +16,8 @@ Ante cualquier solicitud del usuario, clasifica primero su impacto según `docs/
 
 | Tipo de Cambio | Impacto | Carril Activado | Ceremonia Requerida |
 | :--- | :--- | :--- | :--- |
-| Nuevas vistas, rutas, componentes complejos o cambio de sistema de diseño | `MAJOR` / `MINOR` | **Carril Completo** | Entrevista (`/ui-grill`) -> Flujo UX (`UF-*`) + Matriz Heurística FSM -> Tokens/Rutas/Componentes/Estado -> Test *Spec-First* (Unit+`axe` / Playwright E2E) -> `pending.md` -> Gatekeeper `/plan`. |
-| Ajuste cosmético menor, fix de accesibilidad o bug de estado local sin alterar rutas/contratos | `PATCH` | **Carril Fast-Track (Micro-Spec)** | Omite crear nuevos flujos UX (`Referencia Funcional: N/A (PATCH / Fast-Track)`). Registra bloque compacto en `pending.md`, aplica `/diagnose` + test de regresión en rojo, pide confirmación breve y aplica el fix. |
+| Nuevas vistas, rutas, componentes complejos, cambio de sistema de diseño o upgrade `MAJOR` de dependencias que altere `src/` | `MAJOR` / `MINOR` | **Carril Completo** | Entrevista (`/ui-grill`) -> Flujo UX (`UF-*`) + Matriz Heurística FSM -> Tokens/Rutas/Componentes/Estado -> Test *Spec-First* (Unit+`axe` / Playwright E2E) -> `pending.md` -> Gatekeeper `/plan`. |
+| Ajuste cosmético menor, fix de accesibilidad, bug de estado local o parche de seguridad compatible / `overrides` en lockfile sin alterar rutas/contratos | `PATCH` | **Carril Fast-Track (Micro-Spec)** | Omite crear nuevos flujos UX (`Referencia Funcional: N/A (PATCH / Fast-Track)`). Registra bloque compacto en `pending.md` (ej. dominio `SEC`), aplica `/diagnose` (o diagnóstico `gh`) + test de regresión en rojo, pide confirmación breve y aplica el fix. |
 
 ---
 
@@ -65,3 +65,18 @@ Si una solicitud toca una ruta o módulo listado en `docs/functional/index.md` b
 ## CICLO OBLIGATORIO DE GRAPHIFY Y REVISIÓN
 1. **Antes de Editar:** Si existe `graphify-out/graph.json`, consulta dependencias (`graphify query` / `graphify path`).
 2. **Al Finalizar Tests:** Revisa el diff (`/code-review`) verificando reglas anti-AI slop, ausencia de valores CSS quemados y foco accesible, y ejecuta `graphify update` respetando `.graphifyignore`.
+
+---
+
+## AUDITORIA Y REMEDIACION DE VULNERABILIDADES (DEPENDABOT + GH CLI)
+
+Ante alertas de vulnerabilidades en paquetes detectadas por GitHub Dependabot o solicitudes de auditoría de dependencias, el agente sigue estos 5 pasos obligatorios:
+
+1. **Pre-vuelo de GitHub CLI (`gh`):** Ejecuta `gh auth status` y resuelve el repositorio con `gh repo view --json nameWithOwner -q .nameWithOwner`. Si `gh` no está instalado o autenticado (o no existe remoto en GitHub), informa el prerrequisito al usuario (`gh auth login` / `gh auth refresh -s security_events`) y realiza *fallback* al auditor local del gestor de paquetes (`npm audit --json`, `pnpm audit --json`, `yarn npm audit`).
+2. **Extracción de Alertas y PRs del Bot:** Consulta `gh api "repos/{owner}/{repo}/dependabot/alerts?state=open&per_page=100"` (priorizando `critical` y `high`) extrayendo número de alerta, paquete, GHSA/CVE, alcance (`runtime` vs `development`) y `first_patched_version`, además de `gh pr list --author "app/dependabot" --state open` (y `gh pr checks <num>`) para reutilizar evidencia de CI.
+3. **Clasificación de Impacto (3 Rutas):**
+   - **Parche SemVer compatible o transitivo (`overrides` / `resolutions`):** Se tramita por **Carril Fast-Track (`PATCH`)**.
+   - **Upgrade `MAJOR` con *breaking changes* en `src/` o cambios en `docs/technical/tech-stack.md`:** Detén el auto-fix directo, analiza impacto (`graphify` si aplica) y escala a **Carril Completo (`MINOR`/`MAJOR`)** presentando `/plan` (`/ui-plan`) para aprobación humana antes de tocar código fuente.
+   - **Sin parche disponible o falso positivo en tooling de desarrollo:** Presenta la evidencia al usuario y consulta si desea aplicar un *workaround* o descartar la alerta en GitHub con motivo explícito.
+4. **Trazabilidad Gatekeeper (`REQ-UI-SEC-XXX`) y Ejecución:** Registra `fspec req:new "Remediacion Dependabot: <paquete/GHSA>" --domain SEC --impact PATCH` declarando `package.json` y el lockfile en `Fronteras y Artefactos`. Aplica el bump mínimo seguro a `first_patched_version` y corre `fspec update --refresh-stack` si cambia una versión documentada en `docs/technical/tech-stack.md`.
+5. **Verificación Doble y Cierre:** Comprueba que el auditor local del gestor de paquetes quede limpio respecto a las alertas remediadas, ejecuta la suite de pruebas del proyecto (`vitest`/`jest`/`playwright`), valida con `fspec check --security` y archiva el requerimiento con `fspec resolve REQ-UI-SEC-XXX --bump`.

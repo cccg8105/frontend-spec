@@ -1,5 +1,6 @@
 import json
 import re
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
@@ -403,8 +404,98 @@ def _validate_spec_json_sidecars(
         errors.extend(validate_against_schema(payload, schema, path=json_file.name))
 
 
+def audit_github_dependabot_alerts(
+    project_root: Path,
+) -> Tuple[List[str], List[str], List[str]]:
+    """Consulta alertas abiertas de Dependabot usando GitHub CLI (gh)."""
+    sec_errors: List[str] = []
+    sec_warnings: List[str] = []
+    sec_infos: List[str] = []
+
+    gh_bin = shutil.which("gh")
+    if not gh_bin:
+        sec_warnings.append(
+            "GitHub CLI (gh) no detectado en PATH. Instala el prerrequisito 'gh' "
+            "(ej. 'winget install --id GitHub.cli' o https://cli.github.com/) y ejecuta "
+            "'gh auth login' para consultar alertas de Dependabot."
+        )
+        return sec_errors, sec_warnings, sec_infos
+
+    try:
+        proc = subprocess.run(
+            [
+                gh_bin,
+                "api",
+                "repos/{owner}/{repo}/dependabot/alerts?state=open&per_page=100",
+            ],
+            cwd=str(project_root),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+    except OSError as exc:
+        sec_warnings.append(
+            f"No se pudo ejecutar GitHub CLI (gh) para consultar Dependabot: {exc}."
+        )
+        return sec_errors, sec_warnings, sec_infos
+
+    if proc.returncode != 0:
+        raw_err = (proc.stderr or proc.stdout or "").strip()
+        detail = raw_err.splitlines()[0] if raw_err else f"exit code {proc.returncode}"
+        sec_warnings.append(
+            f"No se pudo consultar Dependabot via GitHub CLI (gh): {detail}. "
+            "Verifica 'gh auth status' (scope 'security_events') y que el repositorio "
+            "tenga un remoto en GitHub."
+        )
+        return sec_errors, sec_warnings, sec_infos
+
+    try:
+        alerts = json.loads(proc.stdout or "[]")
+    except json.JSONDecodeError as exc:
+        sec_warnings.append(
+            f"Respuesta JSON invalida al consultar Dependabot via gh: {exc}."
+        )
+        return sec_errors, sec_warnings, sec_infos
+
+    if not isinstance(alerts, list):
+        sec_warnings.append(
+            "Formato inesperado en respuesta de alertas de Dependabot via gh."
+        )
+        return sec_errors, sec_warnings, sec_infos
+
+    if len(alerts) == 0:
+        sec_infos.append("[OK] Dependabot (gh): 0 alertas de seguridad abiertas en GitHub.")
+        return sec_errors, sec_warnings, sec_infos
+
+    for alert in alerts:
+        if not isinstance(alert, dict):
+            continue
+        num = alert.get("number", "?")
+        advisory = alert.get("security_advisory") or {}
+        vuln = alert.get("security_vulnerability") or {}
+        dep = alert.get("dependency") or {}
+        pkg = ((dep.get("package") or {}).get("name")) or "paquete-desconocido"
+        sev = str(advisory.get("severity") or vuln.get("severity") or "unknown").lower()
+        ghsa = advisory.get("ghsa_id") or advisory.get("cve_id") or "GHSA-N/A"
+        patched = ((vuln.get("first_patched_version") or {}).get("identifier")) or "sin parche directo"
+        msg = (
+            f"Dependabot #{num} [{sev.upper()}] paquete '{pkg}' ({ghsa}) -> "
+            f"actualizar a: {patched} (registra REQ-UI-SEC-*)"
+        )
+        if sev in ("critical", "high"):
+            sec_errors.append(msg)
+        else:
+            sec_warnings.append(msg)
+
+    return sec_errors, sec_warnings, sec_infos
+
+
 def run_check(
-    project_root: Path, check_staged: bool = False, strict_tokens: bool = False
+    project_root: Path,
+    check_staged: bool = False,
+    strict_tokens: bool = False,
+    check_security: bool = False,
 ) -> bool:
     """Ejecuta auditoria integral de especificaciones, esquemas, enlaces y commits staged."""
     project_root = Path(project_root).resolve()
@@ -446,6 +537,13 @@ def run_check(
 
     if strict_tokens:
         errors.extend(scan_burned_hex_tokens(project_root))
+
+    if check_security:
+        sec_errors, sec_warnings, sec_infos = audit_github_dependabot_alerts(project_root)
+        for info_msg in sec_infos:
+            print(info_msg)
+        warnings.extend(sec_warnings)
+        errors.extend(sec_errors)
 
     print("-" * 60)
     if warnings:

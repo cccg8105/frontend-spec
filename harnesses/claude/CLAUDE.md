@@ -17,5 +17,6 @@
 ## 3. Fronteras, Brownfield Just-In-Time y Cierre
 - **Fronteras Estrictas:** Toca solo rutas listadas como `[NEW]`, `[MODIFY]` o `[DELETE]` en `docs/backlog/pending.md`. Trata `docs/backlog/audit-proposals.md` como solo lectura salvo promocion explicita.
 - **Brownfield *Just-In-Time*:** Ante rutas marcadas en `Módulos / Rutas Legadas Detectadas`, documenta su flujo *As-Is* antes del cambio *To-Be*; usa `/ui-bootstrap` para onboarding inicial de repositorios existentes.
+- **Seguridad y Dependabot (`gh` CLI):** Ante alertas de vulnerabilidades en paquetes, verifica `gh auth status`, diagnostica con `gh api "repos/{owner}/{repo}/dependabot/alerts?state=open"` (mas `gh pr list --author "app/dependabot"` y auditor local `npm/pnpm audit`). Tramita parches compatibles o `overrides` de lockfile por **Fast-Track (`PATCH`)** bajo `REQ-UI-SEC-*` y valida con `fspec check --security`; si exige un upgrade `MAJOR` con cambios en `src/`, escala a `/ui-plan`.
 - **Cierre y Graphify:** Ejecuta tests unitarios con `axe-core` y Playwright E2E + viewports cuando aplique, actualiza el historial *Rolling Window* (maximo 3 filas) y corre `graphify update` respetando `.graphifyignore`.
 <!-- FRONTEND-SPEC:END -->
