@@ -1,0 +1,21 @@
+<!-- FRONTEND-SPEC:START -->
+# frontend-spec — Reglas Operativas para Windsurf (Cascade)
+
+> Bloque gestionado por `frontend-spec`. Coexiste con otros bloques gestionados en `.windsurfrules`. No edites dentro de `FRONTEND-SPEC:START` / `FRONTEND-SPEC:END`.
+
+## 1. Gatekeeper de Dos Velocidades
+- **PROHIBIDO** alterar codigo fuente (`src/`, `app/`, `pages/`, `components/`) sin un `REQ-UI-*` activo en `docs/backlog/pending.md` aprobado por el usuario.
+- **Carril Completo (`MAJOR` / `MINOR`):** Ejecuta el workflow `/ui-grill` -> `/ui-plan` -> revision y aprobacion del usuario -> `/ui-execute`. Exige `UF-*`, Matriz FSM (`ui-contracts-guidelines.md`), simetria de tokens, rutas/estado y test *Spec-First*.
+- **Fast-Track (`PATCH`):** Usa `Referencia Funcional: N/A (PATCH / Fast-Track)` para fixes internos/visuales con tokens existentes o a11y; reproduce primero el fallo en rojo y solicita confirmacion breve.
+
+## 2. Estandares Visuales, Contratos HTTP y Preguntas
+- **Contexto O(1):** Consulta `docs/functional/index.md`, `docs/design/index.md`, `docs/technical/index.md` y `graphify-out/` (si existe) antes de explorar codigo masivamente.
+- **Entrevista por Pausa Estructurada:** Aplica *"Codigo, Tokens y Grafo primero, humano despues"* y presenta de 2 a 4 decisiones en el chat usando opciones `A) (Recomendado) / B) / C)` esperando respuesta antes de especificar.
+- **Tokens Simetricos:** Usa unicamente `docs/design/tokens-and-themes.md` (modo claro/oscuro). Cero valores CSS quemados.
+- **FSM, RFC 7807 e Idempotencia:** Exige `stateDiagram-v2` segun `ui-contracts-guidelines.md`, mapeo RFC 7807, cabecera `Idempotency-Key` en mutaciones criticas y handlers MSW consistentes.
+
+## 3. Fronteras, Brownfield Just-In-Time y Cierre
+- **Fronteras y Auditoria:** Modifica exclusivamente archivos declarados en `docs/backlog/pending.md`. Manten `docs/backlog/audit-proposals.md` como solo lectura salvo promocion explicita.
+- **Brownfield *Just-In-Time*:** Documenta el comportamiento *As-Is* antes de cambiar rutas legadas en `docs/functional/index.md`; utiliza `/ui-bootstrap` en proyectos existentes.
+- **Verificacion y Graphify:** Valida unitarios (`axe-core`) y Playwright E2E + viewports si aplica, conserva maximo 3 filas en *Rolling Window* y corre `graphify update` respetando `.graphifyignore`.
+<!-- FRONTEND-SPEC:END -->

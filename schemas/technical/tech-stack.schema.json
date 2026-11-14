@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FrontendTechStackSpecification",
+  "description": "Esquema formal para docs/technical/tech-stack.md con presupuestos Web Vitals y seguridad",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "ecosystem",
+    "core",
+    "performance_budgets",
+    "security_policies"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["tech-stack"]
+    },
+    "ecosystem": {
+      "type": "string",
+      "enum": ["react-vite", "nextjs", "vue-vite", "nuxt", "sveltekit", "astro", "angular"]
+    },
+    "core": {
+      "type": "object",
+      "required": ["framework", "language", "styling", "testing_framework"],
+      "properties": {
+        "framework": {
+          "type": "string",
+          "minLength": 2
+        },
+        "meta_framework": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string",
+          "minLength": 2
+        },
+        "styling": {
+          "type": "string",
+          "minLength": 2
+        },
+        "ui_primitives": {
+          "type": "string"
+        },
+        "server_state": {
+          "type": "string"
+        },
+        "testing_framework": {
+          "type": "string",
+          "minLength": 2
+        },
+        "e2e_framework": {
+          "type": "string"
+        }
+      }
+    },
+    "performance_budgets": {
+      "type": "object",
+      "required": ["lcp", "inp", "cls", "bundle_max_kb"],
+      "properties": {
+        "lcp": {
+          "type": "string",
+          "minLength": 2
+        },
+        "inp": {
+          "type": "string",
+          "minLength": 2
+        },
+        "cls": {
+          "type": "string",
+          "minLength": 2
+        },
+        "bundle_max_kb": {
+          "type": "integer"
+        }
+      }
+    },
+    "security_policies": {
+      "type": "object",
+      "required": ["xss", "token_storage", "csp"],
+      "properties": {
+        "xss": {
+          "type": "string",
+          "minLength": 5
+        },
+        "token_storage": {
+          "type": "string",
+          "minLength": 5
+        },
+        "csp": {
+          "type": "string",
+          "minLength": 5
+        },
+        "i18n_policy": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

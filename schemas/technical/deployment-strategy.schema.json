@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FrontendDeploymentStrategySpecification",
+  "description": "Esquema formal para docs/technical/deployment-strategy.md",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "hosting_model",
+    "pipeline_diagram_mermaid",
+    "public_env_vars",
+    "security_headers",
+    "rollback_strategy"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["deployment-strategy"]
+    },
+    "hosting_model": {
+      "type": "string",
+      "enum": ["static-cdn", "ssr-node", "edge-serverless", "hybrid"]
+    },
+    "pipeline_diagram_mermaid": {
+      "type": "string",
+      "minLength": 10
+    },
+    "public_env_vars": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "purpose", "is_secret"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 3
+          },
+          "is_secret": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "security_headers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3
+      }
+    },
+    "cache_policy": {
+      "type": "string"
+    },
+    "rollback_strategy": {
+      "type": "string",
+      "minLength": 5
+    }
+  }
+}

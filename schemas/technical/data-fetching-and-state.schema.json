@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DataFetchingAndStateSpecification",
+  "description": "Esquema formal para docs/technical/data-fetching-and-state.md",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "server_state_tool",
+    "mock_strategy",
+    "rfc7807_error_mappings",
+    "idempotency_policy"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["data-fetching-and-state"]
+    },
+    "server_state_tool": {
+      "type": "string",
+      "minLength": 2
+    },
+    "client_state_tool": {
+      "type": "string"
+    },
+    "url_state_strategy": {
+      "type": "string"
+    },
+    "mock_strategy": {
+      "type": "string",
+      "enum": ["msw", "mirage", "playwright-route", "custom", "none"]
+    },
+    "rfc7807_error_mappings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["status_code", "ui_action", "preserves_form_draft"],
+        "properties": {
+          "status_code": {
+            "type": "string",
+            "pattern": "^(400|401|403|404|409|422|429|5xx|[45][0-9]{2})$"
+          },
+          "ui_action": {
+            "type": "string",
+            "minLength": 5
+          },
+          "preserves_form_draft": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "idempotency_policy": {
+      "type": "object",
+      "required": ["header_name", "strategy", "critical_mutations"],
+      "properties": {
+        "header_name": {
+          "type": "string",
+          "enum": ["Idempotency-Key"]
+        },
+        "strategy": {
+          "type": "string",
+          "minLength": 5
+        },
+        "critical_mutations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

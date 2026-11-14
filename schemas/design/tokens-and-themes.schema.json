@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DesignTokensAndThemesSpecification",
+  "description": "Esquema formal para docs/design/tokens-and-themes.md con simetria claro/oscuro",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "theme_modes",
+    "semantic_colors",
+    "typography",
+    "breakpoints"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["design-tokens"]
+    },
+    "theme_modes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["light", "dark", "system", "high-contrast"]
+      }
+    },
+    "semantic_colors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["token", "light_hex", "dark_hex", "role"],
+        "properties": {
+          "token": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "light_hex": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "dark_hex": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "role": {
+            "type": "string",
+            "minLength": 3
+          },
+          "contrast_ratio": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "typography": {
+      "type": "object",
+      "required": ["display_font", "body_font", "mono_font"],
+      "properties": {
+        "display_font": {
+          "type": "string",
+          "minLength": 2
+        },
+        "body_font": {
+          "type": "string",
+          "minLength": 2
+        },
+        "mono_font": {
+          "type": "string",
+          "minLength": 2
+        },
+        "scale": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "spacing": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["token", "value"],
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "radii": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["token", "value"],
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "z_index": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["layer", "value"],
+        "properties": {
+          "layer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "breakpoints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "min_width"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2
+          },
+          "min_width": {
+            "type": "string",
+            "pattern": "^[0-9]+(px|rem|em)$"
+          }
+        }
+      }
+    }
+  }
+}

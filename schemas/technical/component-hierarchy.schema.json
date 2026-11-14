@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ComponentHierarchySpecification",
+  "description": "Esquema formal para docs/technical/component-hierarchy.md y catalogo CMP-*",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "atomic_levels",
+    "components"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["component-hierarchy"]
+    },
+    "atomic_levels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["atoms", "molecules", "organisms", "layouts", "pages"]
+      }
+    },
+    "dependency_rule": {
+      "type": "string",
+      "minLength": 5
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "atomic_level", "fsm_required"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^CMP-[A-Z0-9]+-[0-9]{3,}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2
+          },
+          "atomic_level": {
+            "type": "string",
+            "enum": ["atoms", "molecules", "organisms", "layouts", "pages"]
+          },
+          "fsm_required": {
+            "type": "boolean"
+          },
+          "file_path": {
+            "type": "string"
+          },
+          "consumed_tokens": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 2
+            }
+          },
+          "a11y_roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["Borrador", "Activo", "As-Is", "Deprecado"]
+          }
+        }
+      }
+    }
+  }
+}

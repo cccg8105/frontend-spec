@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RoutingAndRenderingSpecification",
+  "description": "Esquema formal para docs/technical/routing-and-rendering.md",
+  "type": "object",
+  "required": [
+    "artifact_type",
+    "default_rendering_mode",
+    "routes"
+  ],
+  "properties": {
+    "artifact_type": {
+      "type": "string",
+      "enum": ["routing-and-rendering"]
+    },
+    "default_rendering_mode": {
+      "type": "string",
+      "enum": ["csr", "ssr", "ssg", "rsc", "hybrid"]
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "layout", "rendering_mode", "auth_guard", "error_boundary"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "user_flow_id": {
+            "type": "string"
+          },
+          "layout": {
+            "type": "string",
+            "minLength": 2
+          },
+          "rendering_mode": {
+            "type": "string",
+            "enum": ["csr", "ssr", "ssg", "isr", "rsc", "static"]
+          },
+          "auth_guard": {
+            "type": "string",
+            "minLength": 2
+          },
+          "error_boundary": {
+            "type": "string",
+            "minLength": 2
+          },
+          "seo_required": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
