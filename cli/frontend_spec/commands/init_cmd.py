@@ -2,7 +2,7 @@ import datetime
 import re
 import shutil
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from frontend_spec import __version__
 from frontend_spec.commands.update_cmd import (
@@ -25,9 +25,10 @@ def _prompt_interactive_options(
     versioning: str,
     current_version: str,
     target_dir: Path,
+    ecosystem_explicit: bool = False,
 ) -> Dict[str, str]:
     selected = profile
-    if detection["mode"] == "greenfield" or not detection["detected"]:
+    if not ecosystem_explicit and (detection["mode"] == "greenfield" or not detection["detected"]):
         print("\nConfiguracion de ecosistema frontend:")
         for idx, prof in enumerate(ECOSYSTEM_PROFILES, 1):
             print(f"  {idx}. {prof['runtime_label']} ({prof['ecosystem']})")
@@ -97,6 +98,8 @@ def run_init(
     versioning: str = "semver",
     interactive: bool = False,
     force: bool = False,
+    ecosystem: Optional[str] = None,
+    mode: str = "auto",
 ) -> None:
     """Inicializa frontend-spec en un proyecto frontend Greenfield o Brownfield."""
     target_dir = Path(target_dir).resolve()
@@ -113,10 +116,30 @@ def run_init(
     detection = detect_frontend_ecosystem(target_dir)
     print(f"[INFO] {detection['message']}")
 
-    profile = detection.get("detected") or build_profile_context(target_dir, "react-vite")
+    if ecosystem:
+        profile = build_profile_context(target_dir, ecosystem)
+        print(
+            f"[INFO] Perfil de ecosistema fijado por flag --ecosystem: "
+            f"{profile['runtime_label']} ({profile['ecosystem']})"
+        )
+    else:
+        profile = detection.get("detected") or build_profile_context(target_dir, "react-vite")
+
+    if mode == "greenfield":
+        effective_state = "scaffold" if (target_dir / "package.json").is_file() else "empty"
+    elif mode == "brownfield":
+        effective_state = "brownfield"
+    else:
+        effective_state = str(
+            detection.get(
+                "project_state",
+                "empty" if detection["mode"] == "greenfield" else "brownfield",
+            )
+        )
+
     current_version = "0.1.0"
 
-    if detection["mode"] == "brownfield" and detection.get("version_path"):
+    if detection.get("version_path"):
         ver_path = detection["version_path"]
         extracted = extract_version(ver_path, profile["format"])
         if extracted:
@@ -124,7 +147,14 @@ def run_init(
             print(f"[OK] Version actual detectada en {ver_path.name}: {current_version}")
 
     if interactive:
-        res = _prompt_interactive_options(detection, profile, versioning, current_version, target_dir)
+        res = _prompt_interactive_options(
+            detection,
+            profile,
+            versioning,
+            current_version,
+            target_dir,
+            ecosystem_explicit=bool(ecosystem),
+        )
         versioning = res["versioning"]
         current_version = res["current_version"]
         profile = res["_profile"]  # type: ignore[assignment]
@@ -218,6 +248,10 @@ def run_init(
             print(f"[OK] Git Hook instalado en .git/hooks/pre-commit ({res_hook})")
 
     print(f"\n[OK] frontend-spec v{__version__} inicializado con exito.")
-    if detection["mode"] == "brownfield":
+    if effective_state == "brownfield":
         print("[INFO] Proyecto existente detectado: ejecuta 'frontend-spec bootstrap' (o '/ui-bootstrap') para inventariar rutas, componentes y tokens.")
+    elif effective_state == "scaffold":
+        print("[INFO] Scaffold inicial detectado: define tokens en 'docs/design/tokens-and-themes.md' y registra 'REQ-UI-CORE-001' (no requiere 'fspec bootstrap').")
+    else:
+        print("[INFO] Proyecto vacio inicializado: tras generar el scaffold Node, ejecuta 'frontend-spec update --refresh-stack' para alinear .spec/config.yaml y tech-stack.md.")
     print("[INFO] Revisa 'docs/technical/index.md', 'docs/design/index.md' y 'docs/backlog/pending.md'.\n")

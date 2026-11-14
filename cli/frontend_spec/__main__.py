@@ -10,6 +10,7 @@ from frontend_spec.commands.new_req_cmd import run_new_req
 from frontend_spec.commands.resolve_cmd import run_resolve
 from frontend_spec.commands.sync_index_cmd import run_sync_index
 from frontend_spec.commands.update_cmd import run_update
+from frontend_spec.detector.ecosystem_detector import ECOSYSTEM_PROFILES
 
 
 def main() -> None:
@@ -35,6 +36,18 @@ def main() -> None:
     )
     init_p.add_argument("-i", "--interactive", action="store_true", help="Modo interactivo")
     init_p.add_argument("-f", "--force", action="store_true", help="Sobrescribir archivos existentes")
+    init_p.add_argument(
+        "--ecosystem",
+        choices=[p["ecosystem"] for p in ECOSYSTEM_PROFILES],
+        default=None,
+        help="Perfil de ecosistema objetivo (ideal en proyectos vacios)",
+    )
+    init_p.add_argument(
+        "--mode",
+        choices=["auto", "greenfield", "brownfield"],
+        default="auto",
+        help="Fuerza deteccion Greenfield o Brownfield (por defecto auto)",
+    )
     init_p.add_argument("--dir", default=".", help="Directorio destino")
 
     upd_p = subparsers.add_parser(
@@ -51,6 +64,11 @@ def main() -> None:
         "--dry-run",
         action="store_true",
         help="Simula los cambios sin modificar el disco",
+    )
+    upd_p.add_argument(
+        "--refresh-stack",
+        action="store_true",
+        help="Re-detecta package.json/stack y sincroniza .spec/config.yaml y tech-stack.md sin destruir docs/",
     )
     upd_p.add_argument("--dir", default=".", help="Directorio del proyecto")
 
@@ -133,9 +151,16 @@ def main() -> None:
             versioning=args.versioning,
             interactive=args.interactive,
             force=args.force,
+            ecosystem=args.ecosystem,
+            mode=args.mode,
         )
     elif args.command == "update":
-        ok = run_update(target_dir=project_dir, harness=args.harness, dry_run=args.dry_run)
+        ok = run_update(
+            target_dir=project_dir,
+            harness=args.harness,
+            dry_run=args.dry_run,
+            refresh_stack=args.refresh_stack,
+        )
         sys.exit(0 if ok else 1)
     elif args.command == "bootstrap":
         run_bootstrap(project_root=project_dir, mode=args.mode, reset=args.reset)

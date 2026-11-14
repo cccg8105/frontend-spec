@@ -1,4 +1,4 @@
-# frontend-spec v1.0.1
+# frontend-spec v1.1.0
 
 > **Framework y CLI de Especificación Viva para Ingeniería Frontend Multi-Ecosistema asistida por Agentes de IA (Spec-Driven Frontend)**
 
@@ -41,4 +41,4 @@ Elige la guía operativa según el estado actual de tu repositorio:
 
 * **[Guía 04: CLI, Harnesses, Estructura y Contratos (`v1.0.0+`)](guides/04-cli-harnesses-and-contracts.md):** Catálogo de los 7 subcomandos (`init`, `update`, `bootstrap`, `req:new`, `sync`, `check`, `resolve`), estructura del repositorio y del proyecto consumidor, coexistencia en monorepos (`FRONTEND-SPEC:START/END`), los 8 JSON Schemas Draft-07 y contratos congelados.
 * **[Proyecto Piloto (`examples/sample-dashboard-ui/`)](examples/sample-dashboard-ui/):** Referencia completa en React + Vite + TypeScript + Tailwind CSS + TanStack Query + MSW + Vitest + Playwright validada sin advertencias con `fspec check`.
-* **[Historial de Versiones (`CHANGELOG.md`)](CHANGELOG.md):** Registro SemVer 2.0.0 del framework (`v0.1.0` -> `v1.0.1`).
+* **[Historial de Versiones (`CHANGELOG.md`)](CHANGELOG.md):** Registro SemVer 2.0.0 del framework (`v0.1.0` -> `v1.1.0`).

@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -136,6 +137,50 @@ IGNORED_SCAFFOLD_ENTRIES = {
     "CLAUDE.md",
     ".windsurfrules",
 }
+
+_SCAN_SKIP_DIRS = {
+    ".git",
+    ".spec",
+    "docs",
+    "node_modules",
+    ".next",
+    ".nuxt",
+    ".svelte-kit",
+    ".astro",
+    ".angular",
+    "dist",
+    "build",
+    "coverage",
+    ".gemini",
+    ".cursor",
+    ".claude",
+    ".windsurf",
+}
+_UI_EXTS = {".tsx", ".jsx", ".vue", ".svelte", ".astro"}
+
+
+def _is_fresh_scaffold(project_root: Path) -> bool:
+    """Determina si el repo tiene un scaffold inicial minimo (<=2 vistas UI, sin features ni tests)."""
+    if not (project_root / "package.json").is_file():
+        return False
+    ui_files = 0
+    for item in project_root.rglob("*"):
+        if any(part in _SCAN_SKIP_DIRS for part in item.parts) or not item.is_file():
+            continue
+        low_name = item.name.lower()
+        rel_path = item.relative_to(project_root)
+        rel = rel_path.as_posix().lower()
+        if re.search(r"\.(test|spec)\.[a-z]+$", low_name) or rel.startswith(
+            ("tests/", "test/", "e2e/", "playwright/", "cypress/")
+        ):
+            return False
+        if rel.startswith(("src/features/", "src/modules/")) and len(rel_path.parts) >= 4:
+            return False
+        if item.suffix.lower() in _UI_EXTS or low_name.endswith(".component.ts"):
+            ui_files += 1
+            if ui_files > 2:
+                return False
+    return True
 
 
 def _has_any_glob(root: Path, patterns: Tuple[str, ...]) -> bool:
@@ -306,7 +351,15 @@ def build_profile_context(project_root: Path, ecosystem_key: Optional[str] = Non
     resolved_key = ecosystem_key or _detect_ecosystem_key(project_root, deps)
     base = dict(_PROFILE_MAP.get(resolved_key, _PROFILE_MAP["react-vite"]))
 
-    has_ts = (project_root / "tsconfig.json").exists() or "typescript" in deps
+    has_pkg = (project_root / "package.json").exists()
+    has_js_only_marker = _has_any_glob(
+        project_root, ("*.config.js", "*.config.mjs", "jsconfig.json")
+    )
+    has_ts = (
+        (project_root / "tsconfig.json").exists()
+        or "typescript" in deps
+        or (not has_pkg and not has_js_only_marker)
+    )
     language = "TypeScript" if has_ts else "JavaScript"
     src_ext = base["src_ext"]
     if not has_ts and src_ext == ".tsx":
@@ -359,6 +412,8 @@ def detect_frontend_ecosystem(project_root: Path) -> Dict[str, Any]:
     if not existing_files:
         return {
             "mode": "greenfield",
+            "project_state": "empty",
+            "is_fresh_scaffold": False,
             "detected": None,
             "message": "Directorio vacio o proyecto nuevo. Modo Greenfield activado.",
         }
@@ -366,9 +421,13 @@ def detect_frontend_ecosystem(project_root: Path) -> Dict[str, Any]:
     profile = build_profile_context(project_root)
     version_path = project_root / profile["version_file"]
     manifest_path = project_root / profile["manifest"]
+    fresh_scaffold = _is_fresh_scaffold(project_root)
+    project_state = "scaffold" if fresh_scaffold else "brownfield"
 
     return {
         "mode": "brownfield",
+        "project_state": project_state,
+        "is_fresh_scaffold": fresh_scaffold,
         "detected": profile,
         "manifest_path": manifest_path,
         "version_path": version_path,

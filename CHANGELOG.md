@@ -25,6 +25,20 @@ Las versiones del framework se estructuran bajo `MAJOR.MINOR.PATCH` (mientras el
 
 ---
 
+## [1.1.0] - 2026-11-14
+
+### Added
+- Flags `--ecosystem` y `--mode {auto,greenfield,brownfield}` en `fspec init` para fijar el perfil técnico en proyectos vacíos sin depender de `-i` o forzar la modalidad Greenfield/Brownfield.
+- Flag `--refresh-stack` en `fspec update` (compatible con `--dry-run`) para re-detectar `package.json`/stack real después de inicializar un directorio vacío y sincronizar `.spec/config.yaml` junto con el bloque `<!-- SYNC:TECH_STACK:START/END -->` de `docs/technical/tech-stack.md` sin sobrescribir documentos vivos.
+- Heurística `_is_fresh_scaffold()` y campos aditivos `project_state` (`empty`, `scaffold`, `brownfield`) e `is_fresh_scaffold` en `detect_frontend_ecosystem()`, diferenciando un boilerplate recién generado de un proyecto Brownfield real.
+
+### Changed
+- `build_profile_context()` ahora asume `TypeScript` (`.tsx`/`.ts`) por defecto en directorios vacíos sin `package.json` ni marcadores exclusivos JavaScript, manteniendo la detección `JavaScript` cuando existe `package.json` sin `tsconfig.json`.
+- Actualización de `guides/01-new-projects-greenfield.md` y `guides/04-cli-harnesses-and-contracts.md` documentando los nuevos flags y el flujo optimizado para scaffolds iniciales vs. repositorios vacíos.
+- Incremento de versión a `1.1.0` en manifiesto, CLI y plantillas base.
+
+---
+
 ## [1.0.1] - 2026-11-14
 
 ### Added

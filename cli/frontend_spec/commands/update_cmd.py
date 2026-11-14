@@ -5,6 +5,7 @@ import stat
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
+from frontend_spec.commands.bootstrap_cmd import _update_tech_stack_sync
 from frontend_spec.commands.check_cmd import run_check
 from frontend_spec.commands.sync_index_cmd import run_sync_index
 from frontend_spec.common import (
@@ -14,6 +15,7 @@ from frontend_spec.common import (
     render_placeholders,
 )
 from frontend_spec.detector.ecosystem_detector import build_profile_context
+from frontend_spec.detector.version_extractor import compute_next_milestone, extract_version
 from frontend_spec.validator.schema_validator import locate_framework_asset
 
 HARNESS_DETECTION_PATHS: Dict[str, List[Path]] = {
@@ -365,10 +367,103 @@ def _ensure_missing_docs_non_destructive(
     return created
 
 
+def _update_indented_yaml_block(raw: str, section: str, values: Dict[str, str]) -> str:
+    block_pat = re.compile(
+        rf"(^{re.escape(section)}:\s*\r?\n)((?:[ \t]+[^\r\n]*\r?\n?)*)",
+        re.MULTILINE,
+    )
+    m = block_pat.search(raw)
+    if not m:
+        return raw
+    block_body = m.group(2)
+    for k, v in values.items():
+        key_pat = re.compile(
+            rf"^([ \t]+{re.escape(k)}:\s*)([\"']?[^\"'\r\n#]+[\"']?)([ \t]*(?:#.*)?)$",
+            re.MULTILINE,
+        )
+        block_body = key_pat.sub(
+            lambda km, val=v: f'{km.group(1)}"{val}"{km.group(3)}',
+            block_body,
+            count=1,
+        )
+    return raw[: m.start(2)] + block_body + raw[m.end(2) :]
+
+
+def _refresh_detected_stack(target_dir: Path, dry_run: bool = False) -> str:
+    """Re-detecta package.json/stack real y sincroniza .spec/config.yaml y docs/technical/tech-stack.md."""
+    profile = build_profile_context(target_dir)
+    cfg = read_config_settings(target_dir)
+
+    ver_file = target_dir / profile["version_file"]
+    detected_ver = (
+        extract_version(ver_file, profile["format"]) if ver_file.is_file() else None
+    )
+    effective_ver = detected_ver or cfg["current_version"]
+
+    if not dry_run:
+        cfg_path = target_dir / ".spec" / "config.yaml"
+        if cfg_path.exists():
+            raw = cfg_path.read_text(encoding="utf-8")
+            raw = _update_indented_yaml_block(
+                raw,
+                "ecosystem",
+                {
+                    "name": profile["ecosystem"],
+                    "framework": profile["framework"],
+                    "meta_framework": profile["meta_framework"],
+                    "language": profile["language"],
+                    "package_manager": profile["package_manager"],
+                    "styling": profile["styling"],
+                    "ui_primitives": profile["ui_primitives"],
+                    "state_server": profile["state_server"],
+                    "unit_test_runner": profile["unit_test_runner"],
+                    "testing_library": profile["testing_library"],
+                    "e2e_runner": profile["e2e_runner"],
+                    "src_dir": profile["src_dir"],
+                    "routes_dir": profile["routes_dir"],
+                    "test_pattern": profile["test_pattern"],
+                },
+            )
+            raw = _update_indented_yaml_block(
+                raw,
+                "version_file",
+                {
+                    "path": profile["version_file"],
+                    "format": profile["format"],
+                    "field": profile["field"],
+                },
+            )
+            if detected_ver and cfg["current_version"] == "0.1.0" and detected_ver != "0.1.0":
+                next_ms = compute_next_milestone(detected_ver, cfg["versioning_scheme"])
+                raw = re.sub(
+                    r'^current_version:\s*["\']?[^"\'\r\n]+["\']?',
+                    f'current_version: "{detected_ver}"',
+                    raw,
+                    count=1,
+                    flags=re.MULTILINE,
+                )
+                raw = re.sub(
+                    r'^current_milestone:\s*["\']?[^"\'\r\n]+["\']?',
+                    f'current_milestone: "{next_ms}"',
+                    raw,
+                    count=1,
+                    flags=re.MULTILINE,
+                )
+            cfg_path.write_text(raw, encoding="utf-8")
+
+        _update_tech_stack_sync(target_dir / "docs", profile, effective_ver)
+
+    return (
+        f"{profile['runtime_label']} "
+        f"({profile['ecosystem']} / {profile['language']} / {profile['styling']} / v{effective_ver})"
+    )
+
+
 def run_update(
     target_dir: Path,
     harness: Optional[str] = None,
     dry_run: bool = False,
+    refresh_stack: bool = False,
 ) -> bool:
     """Actualiza plantillas, skills, reglas gestionadas y hook pre-commit sin tocar docs/ existentes."""
     target_dir = Path(target_dir).resolve()
@@ -387,6 +482,10 @@ def run_update(
 
     mode_label = "[DRY-RUN] " if dry_run else ""
     print(f"\n[INFO] {mode_label}Actualizando frontend-spec en: {target_dir}")
+
+    if refresh_stack:
+        stack_summary = _refresh_detected_stack(target_dir, dry_run=dry_run)
+        print(f"[OK] {mode_label}Stack sincronizado en .spec/config.yaml y tech-stack.md: {stack_summary}")
 
     # 1. Blueprints .spec/templates/
     bp_src = templates_root / ".spec" / "templates"

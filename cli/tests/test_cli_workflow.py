@@ -1,12 +1,14 @@
 import json
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 CLI_DIR = Path(__file__).resolve().parent.parent
+CLI_MAIN = CLI_DIR / "main.py"
 if str(CLI_DIR) not in sys.path:
     sys.path.insert(0, str(CLI_DIR))
 
@@ -132,6 +134,67 @@ flowchart TD
         seq_cfg = (seq_dir / ".spec" / "config.yaml").read_text(encoding="utf-8")
         self.assertIn('versioning_scheme: "sequential"', seq_cfg)
         self.assertTrue(run_check(seq_dir))
+
+    def test_init_empty_with_ecosystem_and_mode_flags(self):
+        svelte_dir = self.tmp / "empty-svelte"
+        run_init(
+            svelte_dir,
+            harness="antigravity",
+            ecosystem="sveltekit",
+            mode="greenfield",
+        )
+        cfg_txt = (svelte_dir / ".spec" / "config.yaml").read_text(encoding="utf-8")
+        self.assertIn('name: "sveltekit"', cfg_txt)
+        self.assertIn('language: "TypeScript"', cfg_txt)
+        self.assertIn('routes_dir: "src/routes"', cfg_txt)
+        self.assertTrue(run_check(svelte_dir))
+
+        # Ejecucion por subproceso con --ecosystem y --mode en directorio vacio
+        astro_dir = self.tmp / "empty-astro"
+        astro_dir.mkdir()
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(CLI_MAIN),
+                "init",
+                "--dir",
+                str(astro_dir),
+                "--ecosystem",
+                "astro",
+                "--mode",
+                "greenfield",
+                "--harness",
+                "claude",
+            ],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("--refresh-stack", proc.stdout)
+        astro_cfg = (astro_dir / ".spec" / "config.yaml").read_text(encoding="utf-8")
+        self.assertIn('name: "astro"', astro_cfg)
+        self.assertIn('language: "TypeScript"', astro_cfg)
+
+        # Scaffold inicial via subproceso sugiere Kickoff REQ-UI-CORE-001 y NO bootstrap
+        scaf_dir = self.tmp / "vite-scaf"
+        (scaf_dir / "src").mkdir(parents=True)
+        (scaf_dir / "package.json").write_text(
+            json.dumps({"name": "vite-scaf", "version": "0.0.0", "dependencies": {"react": "19.0.0"}}),
+            encoding="utf-8",
+        )
+        (scaf_dir / "tsconfig.json").write_text("{}", encoding="utf-8")
+        (scaf_dir / "vite.config.ts").write_text("export default {};", encoding="utf-8")
+        (scaf_dir / "src" / "App.tsx").write_text("export default function App(){return null;}", encoding="utf-8")
+        proc_scaf = subprocess.run(
+            [sys.executable, str(CLI_MAIN), "init", "--dir", str(scaf_dir), "--harness", "antigravity"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(proc_scaf.returncode, 0, proc_scaf.stderr)
+        self.assertIn("Scaffold inicial detectado", proc_scaf.stdout)
+        self.assertNotIn("ejecuta 'frontend-spec bootstrap'", proc_scaf.stdout)
 
 
 if __name__ == "__main__":

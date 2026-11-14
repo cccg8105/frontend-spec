@@ -1,9 +1,9 @@
 # ==============================================================================
-# frontend-spec v1.0.1 - Configuración del Proyecto (Multi-Ecosistema)
+# frontend-spec v1.1.0 - Configuración del Proyecto (Multi-Ecosistema)
 # ==============================================================================
 
 framework: frontend-spec
-version: "1.0.1"
+version: "1.1.0"
 project_name: "{{PROJECT_NAME}}"
 
 # Perfil de ecosistema frontend detectado o seleccionado en init

@@ -145,6 +145,55 @@ class TestUpdateAndBrownfield(unittest.TestCase):
         self.assertTrue((proj / ".claude" / "commands" / "ui-plan.md").exists())
         self.assertTrue(run_check(proj))
 
+    def test_update_refresh_stack_after_empty_init_and_dry_run(self):
+        proj = self.tmp / "spec-first-app"
+        run_init(proj, harness="antigravity", ecosystem="react-vite", mode="greenfield")
+
+        tech_doc = proj / "docs" / "technical" / "tech-stack.md"
+        tech_doc.write_text(
+            tech_doc.read_text(encoding="utf-8") + "\n\n## Notas Manuales del Equipo\n# Decision Arquitectura Custom\n",
+            encoding="utf-8",
+        )
+
+        # Generar scaffold posterior (Next.js + Tailwind + pnpm + v1.4.0)
+        (proj / "package.json").write_text(
+            json.dumps(
+                {
+                    "name": "spec-first-app",
+                    "version": "1.4.0",
+                    "dependencies": {"next": "15.1.0", "react": "19.0.0", "@tanstack/react-query": "5.0.0"},
+                    "devDependencies": {"tailwindcss": "4.0.0", "typescript": "5.7.0", "vitest": "3.0.0"},
+                }
+            ),
+            encoding="utf-8",
+        )
+        (proj / "next.config.mjs").write_text("export default {};", encoding="utf-8")
+        (proj / "tailwind.config.ts").write_text("export default {};", encoding="utf-8")
+        (proj / "tsconfig.json").write_text("{}", encoding="utf-8")
+        (proj / "pnpm-lock.yaml").write_text("", encoding="utf-8")
+
+        # Dry run no modifica .spec/config.yaml ni tech-stack.md
+        self.assertTrue(run_update(proj, harness="antigravity", dry_run=True, refresh_stack=True))
+        cfg_before = (proj / ".spec" / "config.yaml").read_text(encoding="utf-8")
+        self.assertIn('name: "react-vite"', cfg_before)
+        self.assertIn('current_version: "0.1.0"', cfg_before)
+
+        # Refresh real actualiza config.yaml y tabla SYNC:TECH_STACK preservando notas manuales
+        self.assertTrue(run_update(proj, harness="antigravity", dry_run=False, refresh_stack=True))
+        cfg_after = (proj / ".spec" / "config.yaml").read_text(encoding="utf-8")
+        self.assertIn('name: "nextjs"', cfg_after)
+        self.assertIn('styling: "Tailwind CSS"', cfg_after)
+        self.assertIn('package_manager: "pnpm"', cfg_after)
+        self.assertIn('language: "TypeScript"', cfg_after)
+        self.assertIn('current_version: "1.4.0"', cfg_after)
+        self.assertIn('current_milestone: "v1.5.0"', cfg_after)
+
+        tech_after = tech_doc.read_text(encoding="utf-8")
+        self.assertIn("Next.js (React)", tech_after)
+        self.assertIn("Tailwind CSS", tech_after)
+        self.assertIn("# Decision Arquitectura Custom", tech_after)
+        self.assertTrue(run_check(proj))
+
 
 if __name__ == "__main__":
     unittest.main()
