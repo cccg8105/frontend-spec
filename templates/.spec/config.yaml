@@ -1,0 +1,50 @@
+# ==============================================================================
+# frontend-spec v1.0.0 - Configuración del Proyecto (Multi-Ecosistema)
+# ==============================================================================
+
+framework: frontend-spec
+version: "1.0.0"
+project_name: "{{PROJECT_NAME}}"
+
+# Perfil de ecosistema frontend detectado o seleccionado en init
+ecosystem:
+  name: "{{ECOSYSTEM_NAME}}" # react-vite | nextjs | vue-vite | nuxt | sveltekit | astro | angular
+  framework: "{{FRAMEWORK_NAME}}"
+  meta_framework: "{{META_FRAMEWORK}}"
+  language: "{{LANGUAGE_NAME}}"
+  package_manager: "{{PACKAGE_MANAGER}}"
+  styling: "{{STYLING}}"
+  ui_primitives: "{{UI_PRIMITIVES}}"
+  state_server: "{{STATE_SERVER}}"
+  unit_test_runner: "{{UNIT_TEST_RUNNER}}"
+  testing_library: "{{TESTING_LIBRARY}}"
+  e2e_runner: "{{E2E_RUNNER}}"
+  a11y_tool: "axe-core"
+  src_dir: "{{SRC_DIR}}"
+  routes_dir: "{{ROUTES_DIR}}"
+  test_pattern: "{{TEST_PATTERN}}"
+
+# Estrategia de versionamiento del proyecto consumidor: semver | calver | sequential
+versioning_scheme: "{{VERSIONING_SCHEME}}"
+current_version: "{{CURRENT_VERSION}}"
+current_milestone: "{{MILESTONE_VERSION}}"
+
+version_file:
+  path: "{{MANIFEST_FILE}}"
+  format: "json"
+  field: "version"
+
+# Dominios UI / funcionales del proyecto
+domains:
+  - core
+
+harnesses:
+  - antigravity
+
+# Rutas estándar del framework
+paths:
+  functional_docs: "docs/functional"
+  design_docs: "docs/design"
+  technical_docs: "docs/technical"
+  backlog: "docs/backlog"
+  templates: ".spec/templates"
