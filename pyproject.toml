@@ -1,0 +1,34 @@
+[project]
+name = "frontend-spec"
+version = "1.0.0"
+description = "CLI tool and framework for Spec-Driven Frontend development with AI agents"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+frontend-spec = "frontend_spec.__main__:main"
+fspec = "frontend_spec.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["cli/frontend_spec"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"templates" = "frontend_spec/templates"
+"harnesses" = "frontend_spec/harnesses"
+"schemas" = "frontend_spec/schemas"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "cli/**",
+  "templates/**",
+  "harnesses/**",
+  "schemas/**",
+  "agent-prompts/**",
+  "README.md",
+  "CHANGELOG.md",
+]
