@@ -196,6 +196,37 @@ flowchart TD
         self.assertIn("Scaffold inicial detectado", proc_scaf.stdout)
         self.assertNotIn("ejecuta 'frontend-spec bootstrap'", proc_scaf.stdout)
 
+    def test_sync_export_w3c_tokens_and_check(self):
+        proj = self.tmp / "remix-tokens"
+        run_init(proj, harness="antigravity", ecosystem="remix", mode="greenfield")
+        cfg_txt = (proj / ".spec" / "config.yaml").read_text(encoding="utf-8")
+        self.assertIn('name: "remix"', cfg_txt)
+        self.assertIn('src_dir: "app"', cfg_txt)
+
+        req_id = run_new_req(proj, title="Boton primario", domain="core", impact="PATCH")
+        self.assertEqual(req_id, "REQ-UI-CORE-001")
+        pending_txt = (proj / "docs" / "backlog" / "pending.md").read_text(encoding="utf-8")
+        self.assertIn("app/components/core/BotonPrimario.tsx", pending_txt)
+
+        # Exportar tokens W3C DTCG via subproceso CLI y verificar con fspec check
+        proc_sync = subprocess.run(
+            [sys.executable, str(CLI_MAIN), "sync", "--dir", str(proj), "--export-tokens"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(proc_sync.returncode, 0, proc_sync.stderr)
+        tokens_json_path = proj / ".spec" / "specs" / "design.tokens.json"
+        self.assertTrue(tokens_json_path.exists())
+
+        exported = json.loads(tokens_json_path.read_text(encoding="utf-8"))
+        self.assertIn("color", exported)
+        self.assertIn("primary", exported["color"])
+        self.assertEqual(exported["color"]["primary"]["$type"], "color")
+        self.assertEqual(exported["color"]["primary"]["$value"], "#0F52BA")
+        self.assertEqual(exported["color"]["primary"]["$extensions"]["mode"]["dark"], "#388BFD")
+        self.assertTrue(run_check(proj))
+
 
 if __name__ == "__main__":
     unittest.main()

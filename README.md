@@ -1,12 +1,12 @@
-# frontend-spec v1.1.0
+# frontend-spec v1.2.0
 
 > **Framework y CLI de Especificación Viva para Ingeniería Frontend Multi-Ecosistema asistida por Agentes de IA (Spec-Driven Frontend)**
 
-`frontend-spec` es la contraparte frontend de `backend-spec`. Estructura la colaboración entre desarrolladores y agentes de IA en aplicaciones web (**React/Vite, Next.js, Vue/Nuxt, SvelteKit, Astro y Angular**) para erradicar el *"vibe coding"* mediante cinco pilares:
+`frontend-spec` es la contraparte frontend de `backend-spec`. Estructura la colaboración entre desarrolladores y agentes de IA en aplicaciones web (**React/Vite, Next.js, Remix, Vue/Nuxt, SvelteKit, SolidJS, Qwik, Astro y Angular**) para erradicar el *"vibe coding"* mediante cinco pilares:
 
-1. **Multi-Ecosistema con Abstracción Única:** Contratos portables de flujos, componentes (`Props`/Slots/FSM), rutas y testing.
+1. **Multi-Ecosistema con Abstracción Única:** Contratos portables de flujos, componentes (`Props`/Slots/FSM/Storybook CSF 3.0), rutas y testing.
 2. **Diseño Intencional Anti-AI Slop:** Tipografía con carácter, paleta acotada, asimetría espacial y respeto a `prefers-reduced-motion`.
-3. **Tokens Ejecutables Claro/Oscuro:** Paleta simétrica, contraste WCAG y variables CSS/Tailwind sin valores quemados.
+3. **Tokens Ejecutables Claro/Oscuro + W3C DTCG:** Paleta simétrica, exportación estandarizada `*.tokens.json` (`fspec sync --export-tokens`) y bloqueo opcional de hexadecimales quemados (`fspec check --strict-tokens`).
 4. **Contratos Draft-07 y Puente Backend:** Validación sin dependencias (`schemas/`) para flujos UX, estado servidor, RFC 7807, `Idempotency-Key`, MSW, Web Vitals y XSS/CSP.
 5. **Gatekeeper de Dos Velocidades:** Rigor completo para cambios `MAJOR`/`MINOR` y carril ligero *Fast-Track* para `PATCH`.
 
@@ -41,4 +41,4 @@ Elige la guía operativa según el estado actual de tu repositorio:
 
 * **[Guía 04: CLI, Harnesses, Estructura y Contratos (`v1.0.0+`)](guides/04-cli-harnesses-and-contracts.md):** Catálogo de los 7 subcomandos (`init`, `update`, `bootstrap`, `req:new`, `sync`, `check`, `resolve`), estructura del repositorio y del proyecto consumidor, coexistencia en monorepos (`FRONTEND-SPEC:START/END`), los 8 JSON Schemas Draft-07 y contratos congelados.
 * **[Proyecto Piloto (`examples/sample-dashboard-ui/`)](examples/sample-dashboard-ui/):** Referencia completa en React + Vite + TypeScript + Tailwind CSS + TanStack Query + MSW + Vitest + Playwright validada sin advertencias con `fspec check`.
-* **[Historial de Versiones (`CHANGELOG.md`)](CHANGELOG.md):** Registro SemVer 2.0.0 del framework (`v0.1.0` -> `v1.1.0`).
+* **[Historial de Versiones (`CHANGELOG.md`)](CHANGELOG.md):** Registro SemVer 2.0.0 del framework (`v0.1.0` -> `v1.2.0`).

@@ -1,8 +1,10 @@
+import json
 import re
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
 from frontend_spec.validator.schema_validator import (
+    export_w3c_design_tokens,
     extract_design_tokens_summary,
     extract_requirement_data,
     extract_user_flow_data,
@@ -228,7 +230,22 @@ def _sync_design_index(docs_dir: Path) -> None:
     design_index.write_text(updated, encoding="utf-8")
 
 
-def run_sync_index(project_root: Path) -> Tuple[int, int]:
+def _export_w3c_tokens_file(project_root: Path, docs_dir: Path) -> bool:
+    tokens_md = docs_dir / "design" / "tokens-and-themes.md"
+    if not tokens_md.exists():
+        print("[WARN] No se encontro docs/design/tokens-and-themes.md para exportar tokens W3C.")
+        return False
+
+    payload = export_w3c_design_tokens(tokens_md.read_text(encoding="utf-8"))
+    out_file = project_root / ".spec" / "specs" / "design.tokens.json"
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    color_count = len(payload.get("color", {}))
+    print(f"[OK] Design tokens W3C DTCG exportados en .spec/specs/design.tokens.json ({color_count} colores)")
+    return True
+
+
+def run_sync_index(project_root: Path, export_tokens: bool = False) -> Tuple[int, int]:
     """Sincroniza en disco docs/backlog/index.md, docs/functional/index.md y docs/design/index.md."""
     project_root = Path(project_root).resolve()
     docs_dir = project_root / "docs"
@@ -240,6 +257,9 @@ def run_sync_index(project_root: Path) -> Tuple[int, int]:
     synced_reqs = _sync_backlog_index(docs_dir)
     synced_ufs, _ = _sync_functional_index(project_root, docs_dir)
     _sync_design_index(docs_dir)
+
+    if export_tokens:
+        _export_w3c_tokens_file(project_root, docs_dir)
 
     print(
         f"[OK] Indices sincronizados: {synced_reqs} req(s) en backlog/index.md y "

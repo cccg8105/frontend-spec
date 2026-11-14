@@ -109,6 +109,11 @@ def main() -> None:
     sync_p = subparsers.add_parser(
         "sync", help="Sincroniza docs/backlog/index.md, docs/functional/index.md y docs/design/index.md"
     )
+    sync_p.add_argument(
+        "--export-tokens",
+        action="store_true",
+        help="Exporta docs/design/tokens-and-themes.md a .spec/specs/design.tokens.json (formato W3C DTCG)",
+    )
     sync_p.add_argument("--dir", default=".", help="Directorio del proyecto")
 
     chk_p = subparsers.add_parser(
@@ -118,6 +123,11 @@ def main() -> None:
         "--staged",
         action="store_true",
         help="Valida git diff --cached bloqueando commits fantasma sin REQ-UI-*",
+    )
+    chk_p.add_argument(
+        "--strict-tokens",
+        action="store_true",
+        help="Detecta colores hexadecimales quemados (#RRGGBB) en componentes UI fuera de tokens",
     )
     chk_p.add_argument("--dir", default=".", help="Directorio del proyecto")
 
@@ -179,9 +189,13 @@ def main() -> None:
         )
         sys.exit(0 if req_id else 1)
     elif args.command == "sync":
-        run_sync_index(project_root=project_dir)
+        run_sync_index(project_root=project_dir, export_tokens=args.export_tokens)
     elif args.command == "check":
-        ok = run_check(project_root=project_dir, check_staged=args.staged)
+        ok = run_check(
+            project_root=project_dir,
+            check_staged=args.staged,
+            strict_tokens=args.strict_tokens,
+        )
         sys.exit(0 if ok else 1)
     elif args.command == "resolve":
         ok = run_resolve(

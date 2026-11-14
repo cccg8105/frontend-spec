@@ -17,7 +17,7 @@
     },
     "ecosystem": {
       "type": "string",
-      "enum": ["react-vite", "nextjs", "vue-vite", "nuxt", "sveltekit", "astro", "angular"]
+      "enum": ["react-vite", "nextjs", "remix", "vue-vite", "nuxt", "sveltekit", "solid", "qwik", "astro", "angular"]
     },
     "core": {
       "type": "object",

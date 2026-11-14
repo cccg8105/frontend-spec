@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Any, Dict, Tuple
 
 HARNESS_NAMES: Tuple[str, ...] = ("antigravity", "cursor", "claude", "windsurf")
 
@@ -27,7 +27,7 @@ def render_placeholders(text: str, context: Dict[str, str]) -> str:
 
 def build_doc_context(
     project_name: str,
-    profile: Dict[str, str],
+    profile: Dict[str, Any],
     current_version: str,
     milestone_version: str,
     versioning: str,

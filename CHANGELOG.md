@@ -18,10 +18,22 @@ Las versiones del framework se estructuran bajo `MAJOR.MINOR.PATCH` (mientras el
 
 ## [Unreleased]
 
-### Planned
-- Soporte para exportación de tokens en formato W3C Design Tokens (`*.tokens.json`).
-- Integración opcional con Storybook para documentación viva de componentes y regresión visual.
-- Nuevos perfiles de ecosistema (`SolidJS`, `Remix`, `Qwik`) en el detector CLI.
+*(Sin cambios pendientes planificados en este momento.)*
+
+---
+
+## [1.2.0] - 2026-11-14
+
+### Added
+- Soporte de exportacion y validacion **W3C Design Tokens Community Group (DTCG)**:
+  - Flag `--export-tokens` en `fspec sync` para exportar `docs/design/tokens-and-themes.md` hacia `.spec/specs/design.tokens.json` con modos `light`/`dark` en `$extensions.mode` y tipografía.
+  - Reconocimiento y validación estructural automática de sidecars `*.tokens.json` en `fspec check` mediante `validate_w3c_tokens_dict()`.
+  - Flag opt-in `--strict-tokens` en `fspec check` (`scan_burned_hex_tokens()`) para detectar colores hexadecimales quemados en archivos de componentes UI fuera de definiciones de tema/tokens.
+- Tres nuevos perfiles de ecosistema en `ECOSYSTEM_PROFILES`, detector CLI, `_resolve_component_artifact()`, `tech-stack.schema.json` y `_template_ui_component.md`: **Remix (`remix`)**, **SolidJS (`solid`)** y **Qwik (`qwik`)**, ampliando la cobertura oficial de 7 a 10 ecosistemas.
+- Integración opcional con **Storybook**: detección automática (`has_storybook`) por paquetes `@storybook/*` o directorio `.storybook/`, inventario de historias `*.stories.*` en `fspec bootstrap` (`.spec/bootstrap-report.md` y fila condicional en `docs/technical/tech-stack.md`), y sección CSF 3.0 + `@storybook/addon-a11y` + `play()` dentro de `_template_ui_component.md`.
+
+### Changed
+- Actualización de `README.md`, `guides/04-cli-harnesses-and-contracts.md`, `agent-prompts/AGENTS.md` y metadatos del paquete a `v1.2.0` (ampliando la suite de pruebas a 24 casos en 6 módulos).
 
 ---
 

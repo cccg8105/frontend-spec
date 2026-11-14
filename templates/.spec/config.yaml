@@ -1,14 +1,14 @@
 # ==============================================================================
-# frontend-spec v1.1.0 - Configuración del Proyecto (Multi-Ecosistema)
+# frontend-spec v1.2.0 - Configuración del Proyecto (Multi-Ecosistema)
 # ==============================================================================
 
 framework: frontend-spec
-version: "1.1.0"
+version: "1.2.0"
 project_name: "{{PROJECT_NAME}}"
 
 # Perfil de ecosistema frontend detectado o seleccionado en init
 ecosystem:
-  name: "{{ECOSYSTEM_NAME}}" # react-vite | nextjs | vue-vite | nuxt | sveltekit | astro | angular
+  name: "{{ECOSYSTEM_NAME}}" # react-vite | nextjs | remix | vue-vite | nuxt | sveltekit | solid | qwik | astro | angular
   framework: "{{FRAMEWORK_NAME}}"
   meta_framework: "{{META_FRAMEWORK}}"
   language: "{{LANGUAGE_NAME}}"

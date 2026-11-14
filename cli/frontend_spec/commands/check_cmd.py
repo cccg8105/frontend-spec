@@ -11,7 +11,9 @@ from frontend_spec.validator.schema_validator import (
     extract_user_flow_data,
     load_json_schema,
     parse_yaml_frontmatter,
+    scan_burned_hex_tokens,
     validate_against_schema,
+    validate_w3c_tokens_dict,
 )
 
 FRONTEND_SOURCE_EXTENSIONS = {
@@ -370,6 +372,17 @@ def _validate_spec_json_sidecars(
         "deployment-strategy.json": "technical/deployment-strategy.schema.json",
     }
     for json_file in sorted(specs_dir.glob("*.json")):
+        if json_file.name.endswith(".tokens.json"):
+            try:
+                payload = json.loads(json_file.read_text(encoding="utf-8"))
+            except Exception as exc:
+                errors.append(f".spec/specs/{json_file.name}: JSON invalido ({exc})")
+                continue
+            errors.extend(
+                validate_w3c_tokens_dict(payload, label=f".spec/specs/{json_file.name}")
+            )
+            continue
+
         if json_file.name.startswith("user-flow"):
             schema_rel = "user-flow.schema.json"
         else:
@@ -390,7 +403,9 @@ def _validate_spec_json_sidecars(
         errors.extend(validate_against_schema(payload, schema, path=json_file.name))
 
 
-def run_check(project_root: Path, check_staged: bool = False) -> bool:
+def run_check(
+    project_root: Path, check_staged: bool = False, strict_tokens: bool = False
+) -> bool:
     """Ejecuta auditoria integral de especificaciones, esquemas, enlaces y commits staged."""
     project_root = Path(project_root).resolve()
     docs_dir = project_root / "docs"
@@ -428,6 +443,9 @@ def run_check(project_root: Path, check_staged: bool = False) -> bool:
 
     if check_staged:
         _verify_staged_commits(project_root, declared_artifacts, has_active_reqs, errors)
+
+    if strict_tokens:
+        errors.extend(scan_burned_hex_tokens(project_root))
 
     print("-" * 60)
     if warnings:

@@ -2,7 +2,7 @@ import datetime
 import json
 import re
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from frontend_spec.commands.sync_index_cmd import _replace_sync_section, run_sync_index
 from frontend_spec.common import build_doc_context, read_config_settings, render_placeholders
@@ -25,6 +25,7 @@ SKIP_DIRS = {
     "__pycache__",
     "dist",
     "build",
+    "storybook-static",
     "coverage",
     "playwright-report",
     "test-results",
@@ -96,6 +97,9 @@ def _scan_frontend_inventory(project_root: Path) -> Dict[str, List[str]]:
 
         if low_rel.startswith(("e2e/", "playwright/", "cypress/")):
             e2e_tests.append(rel)
+            continue
+
+        if re.search(r"\.stories\.(tsx|ts|jsx|js|mdx)$", low_name):
             continue
 
         if (
@@ -171,6 +175,17 @@ def _scan_legacy_docs(project_root: Path) -> List[Dict[str, str]]:
     return legacy_docs[:15]
 
 
+def _scan_stories(project_root: Path) -> List[str]:
+    """Inventaria archivos de historias Storybook (*.stories.*)."""
+    stories: List[str] = []
+    for path in sorted(project_root.rglob("*")):
+        if any(part in SKIP_DIRS for part in path.parts) or not path.is_file():
+            continue
+        if re.search(r"\.stories\.(tsx|ts|jsx|js|mdx)$", path.name.lower()):
+            stories.append(path.relative_to(project_root).as_posix())
+    return stories
+
+
 def _read_graphify_summary(project_root: Path) -> List[str]:
     graph_json = project_root / "graphify-out" / "graph.json"
     if not graph_json.exists():
@@ -216,11 +231,16 @@ def _extract_previous_checkbox_state(report_path: Path) -> Tuple[Dict[str, bool]
 
 
 def _update_tech_stack_sync(
-    docs_dir: Path, profile: Dict[str, str], version: str
+    docs_dir: Path, profile: Dict[str, Any], version: str
 ) -> None:
     tech_stack_file = docs_dir / "technical" / "tech-stack.md"
     if not tech_stack_file.exists():
         return
+    storybook_row = (
+        "\n| **Catálogo Visual** | `Storybook` (`@storybook/*`) | Historias CSF 3.0 + `@storybook/addon-a11y` |"
+        if profile.get("has_storybook")
+        else ""
+    )
     table_block = (
         "| Capa | Tecnología Activa | Notas de Configuración |\n"
         "| :--- | :--- | :--- |\n"
@@ -228,7 +248,7 @@ def _update_tech_stack_sync(
         f"| **Lenguaje** | `{profile['language']}` | Tipado estricto en Props, contratos API y Stores |\n"
         f"| **Estilos y Primitivas** | `{profile['styling']}` + `{profile['ui_primitives']}` | Consumo estricto de `docs/design/tokens-and-themes.md` |\n"
         f"| **Estado Remoto y Mocks** | `{profile['state_server']}` + MSW | Caché declarativa y contratos HTTP simulados |\n"
-        f"| **Testing y a11y** | `{profile['unit_test_runner']}` + `{profile['testing_library']}` + `axe-core` + `{profile['e2e_runner']}` | Cobertura unitaria, WCAG 2.1 AA y E2E responsive |"
+        f"| **Testing y a11y** | `{profile['unit_test_runner']}` + `{profile['testing_library']}` + `axe-core` + `{profile['e2e_runner']}` | Cobertura unitaria, WCAG 2.1 AA y E2E responsive |{storybook_row}"
     )
     updated = _replace_sync_section(
         tech_stack_file.read_text(encoding="utf-8"),
@@ -281,6 +301,7 @@ def run_bootstrap(
     ) or "0.1.0"
 
     inventory = _scan_frontend_inventory(project_root)
+    stories = _scan_stories(project_root)
     legacy_docs = _scan_legacy_docs(project_root)
     god_nodes = _read_graphify_summary(project_root)
     today = datetime.date.today().isoformat()
@@ -338,6 +359,20 @@ def run_bootstrap(
     god_md = "\n".join(f"- {g}" for g in god_nodes) or "- *(Sin grafo Graphify detectado: recomienda ejecutar `graphify` respetando `.graphifyignore`)*"
     legacy_md = "\n".join(f"- `{d['path']}` — {d['drift']}" for d in legacy_docs) or "- *(Sin documentacion previa conflictiva detectada)*"
 
+    has_storybook = bool(profile.get("has_storybook")) or bool(stories)
+    storybook_meta = (
+        f"\n- **Storybook:** Detectado ({len(stories)} archivos `*.stories.*`)"
+        if has_storybook
+        else ""
+    )
+    if has_storybook:
+        stories_lines = "\n".join(f"- `{s}`" for s in stories[:25]) or (
+            "- *(Dependencia `@storybook/*` o `.storybook/` detectada sin archivos `*.stories.*` creados aun)*"
+        )
+        storybook_section = f"\n\n### Catalogo Visual Storybook ({len(stories)})\n{stories_lines}"
+    else:
+        storybook_section = ""
+
     report_md = f"""---
 artifact_type: bootstrap-report
 onboarding_mode: {resolved_mode}
@@ -350,7 +385,7 @@ generated_at: "{today}"
 
 - **Modo Seleccionado:** `{resolved_mode}`
 - **Stack Detectado:** `{profile['runtime_label']}` (`{profile['language']}`, `{profile['styling']}`, `{profile['ui_primitives']}`)
-- **Estado / Mocks:** `{profile['state_server']}` | **Tests:** `{profile['unit_test_runner']}` / `{profile['e2e_runner']}`
+- **Estado / Mocks:** `{profile['state_server']}` | **Tests:** `{profile['unit_test_runner']}` / `{profile['e2e_runner']}`{storybook_meta}
 - **Linea Base de Pruebas:** `{test_baseline}`
 - **Dominios UI Sugeridos:** {domains_md}
 
@@ -392,7 +427,7 @@ generated_at: "{today}"
 {legacy_md}
 
 ### Graphify God Nodes
-{god_md}
+{god_md}{storybook_section}
 """
     report_path.write_text(report_md, encoding="utf-8")
     run_sync_index(project_root)

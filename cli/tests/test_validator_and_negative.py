@@ -147,6 +147,44 @@ class TestValidatorAndNegative(unittest.TestCase):
         subprocess.run(["git", "add", "docs/backlog/changelog.md"], cwd=str(proj), check=True)
         self.assertTrue(run_check(proj, check_staged=True))
 
+    def test_check_strict_tokens_detects_burned_hex(self):
+        proj = self.tmp / "strict-ui"
+        run_init(proj, harness="antigravity", ecosystem="solid", mode="greenfield")
+
+        comp = proj / "src" / "components" / "Button.tsx"
+        comp.parent.mkdir(parents=True, exist_ok=True)
+        comp.write_text(
+            'export const Button = () => <button style={{ backgroundColor: "#FF5733" }}>Enviar</button>;\n',
+            encoding="utf-8",
+        )
+
+        # En modo opt-in: check normal aprueba, check --strict-tokens rechaza hex quemado
+        self.assertTrue(run_check(proj, strict_tokens=False))
+        self.assertFalse(run_check(proj, strict_tokens=True))
+
+        # Reemplazar por variable semantica CSS y verificar via CLI --strict-tokens
+        comp.write_text(
+            'export const Button = () => <button style={{ backgroundColor: "var(--color-primary)" }}>Enviar</button>;\n',
+            encoding="utf-8",
+        )
+        cli_main = Path(__file__).resolve().parent.parent / "main.py"
+        proc_ok = subprocess.run(
+            [sys.executable, str(cli_main), "check", "--dir", str(proj), "--strict-tokens"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(proc_ok.returncode, 0, proc_ok.stderr)
+
+        # Un sidecar *.tokens.json malformado debe fallar en run_check
+        bad_tokens = proj / ".spec" / "specs" / "broken.tokens.json"
+        bad_tokens.parent.mkdir(parents=True, exist_ok=True)
+        bad_tokens.write_text(
+            json.dumps({"color": {"primary": {"$type": "color", "$value": "not-a-hex"}}}),
+            encoding="utf-8",
+        )
+        self.assertFalse(run_check(proj))
+
 
 if __name__ == "__main__":
     unittest.main()

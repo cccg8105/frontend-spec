@@ -21,6 +21,22 @@ ECOSYSTEM_PROFILES: List[Dict[str, str]] = [
         "test_pattern": "tests/unit/{slug}.test.tsx",
     },
     {
+        "ecosystem": "remix",
+        "runtime_label": "Remix (React Router v7)",
+        "framework": "React",
+        "meta_framework": "Remix",
+        "manifest": "package.json",
+        "version_file": "package.json",
+        "format": "json",
+        "field": "version",
+        "src_ext": ".tsx",
+        "src_dir": "app",
+        "routes_dir": "app/routes",
+        "default_state_server": "Remix loader()/action() / URL SearchParams",
+        "default_testing_lib": "@testing-library/react",
+        "test_pattern": "tests/unit/{slug}.test.tsx",
+    },
+    {
         "ecosystem": "nuxt",
         "runtime_label": "Nuxt (Vue)",
         "framework": "Vue",
@@ -51,6 +67,38 @@ ECOSYSTEM_PROFILES: List[Dict[str, str]] = [
         "default_state_server": "SvelteKit load() / Form Actions",
         "default_testing_lib": "@testing-library/svelte",
         "test_pattern": "tests/unit/{slug}.spec.ts",
+    },
+    {
+        "ecosystem": "solid",
+        "runtime_label": "SolidJS (SolidStart / Vite)",
+        "framework": "SolidJS",
+        "meta_framework": "SolidStart / Vite",
+        "manifest": "package.json",
+        "version_file": "package.json",
+        "format": "json",
+        "field": "version",
+        "src_ext": ".tsx",
+        "src_dir": "src",
+        "routes_dir": "src/routes",
+        "default_state_server": "Solid Signals / createResource",
+        "default_testing_lib": "@solidjs/testing-library",
+        "test_pattern": "tests/unit/{slug}.test.tsx",
+    },
+    {
+        "ecosystem": "qwik",
+        "runtime_label": "Qwik (Qwik City)",
+        "framework": "Qwik",
+        "meta_framework": "Qwik City",
+        "manifest": "package.json",
+        "version_file": "package.json",
+        "format": "json",
+        "field": "version",
+        "src_ext": ".tsx",
+        "src_dir": "src",
+        "routes_dir": "src/routes",
+        "default_state_server": "Qwik routeLoader$() / useSignal",
+        "default_testing_lib": "@builder.io/qwik/testing",
+        "test_pattern": "tests/unit/{slug}.test.tsx",
     },
     {
         "ecosystem": "astro",
@@ -150,6 +198,7 @@ _SCAN_SKIP_DIRS = {
     ".angular",
     "dist",
     "build",
+    "storybook-static",
     "coverage",
     ".gemini",
     ".cursor",
@@ -214,17 +263,28 @@ def _detect_ecosystem_key(project_root: Path, deps: Dict[str, str]) -> str:
         ("sveltekit", ("svelte.config.*",), ("@sveltejs/kit",)),
         ("astro", ("astro.config.*",), ("astro",)),
         ("nextjs", ("next.config.*",), ("next",)),
+        ("qwik", (), ("@builder.io/qwik", "@builder.io/qwik-city")),
+        ("solid", (), ("solid-js", "@solidjs/start")),
+        ("remix", ("remix.config.*",), ("@remix-run/react", "@remix-run/node", "@react-router/dev")),
         ("vue-vite", (), ("vue",)),
         ("react-vite", ("vite.config.*",), ("react", "react-dom")),
     )
     for key, globs, pkg_names in checks:
+        if any(p in deps for p in pkg_names):
+            return key
         if globs and _has_any_glob(project_root, globs):
             if key == "react-vite" and "vue" in deps:
                 return "vue-vite"
             return key
-        if any(p in deps for p in pkg_names):
-            return key
     return "react-vite"
+
+
+def _detect_storybook(project_root: Path, deps: Dict[str, str]) -> bool:
+    """Detecta si el proyecto utiliza Storybook por dependencias @storybook/* o carpeta .storybook/."""
+    return (
+        any(k == "storybook" or k.startswith("@storybook/") for k in deps)
+        or (project_root / ".storybook").is_dir()
+    )
 
 
 def _detect_package_manager(project_root: Path) -> str:
@@ -302,6 +362,7 @@ def _detect_state_and_tests(
         "@testing-library/vue",
         "@testing-library/svelte",
         "@testing-library/angular",
+        "@solidjs/testing-library",
     ):
         if lib_pkg in deps:
             testing_lib = lib_pkg
@@ -329,8 +390,11 @@ def _detect_directories(project_root: Path, profile: Dict[str, str]) -> Tuple[st
 
     candidates_by_eco: Dict[str, Tuple[str, ...]] = {
         "nextjs": ("src/app", "app", "src/pages", "pages"),
+        "remix": ("app/routes", "src/routes"),
         "nuxt": ("app/pages", "pages"),
         "sveltekit": ("src/routes",),
+        "solid": ("src/routes", "src/pages"),
+        "qwik": ("src/routes",),
         "astro": ("src/pages",),
         "angular": ("src/app",),
         "vue-vite": ("src/router", "src/pages", "src/views"),
@@ -345,7 +409,7 @@ def _detect_directories(project_root: Path, profile: Dict[str, str]) -> Tuple[st
     return src_dir, routes_dir
 
 
-def build_profile_context(project_root: Path, ecosystem_key: Optional[str] = None) -> Dict[str, str]:
+def build_profile_context(project_root: Path, ecosystem_key: Optional[str] = None) -> Dict[str, Any]:
     """Construye el perfil tecnico completo combinando heuristica del ecosistema y dependencias."""
     deps = _read_package_deps(project_root)
     resolved_key = ecosystem_key or _detect_ecosystem_key(project_root, deps)
@@ -371,6 +435,7 @@ def build_profile_context(project_root: Path, ecosystem_key: Optional[str] = Non
     styling, ui_primitives = _detect_styling_and_ui(project_root, deps)
     state_and_tests = _detect_state_and_tests(project_root, deps, base)
     pkg_manager = _detect_package_manager(project_root)
+    has_storybook = _detect_storybook(project_root, deps)
 
     test_pattern = base["test_pattern"]
     if not has_ts and test_pattern.endswith(".tsx"):
@@ -391,6 +456,7 @@ def build_profile_context(project_root: Path, ecosystem_key: Optional[str] = Non
         "unit_test_runner": state_and_tests["unit_test_runner"],
         "testing_library": state_and_tests["testing_library"],
         "e2e_runner": state_and_tests["e2e_runner"],
+        "has_storybook": has_storybook,
         "manifest": "package.json",
         "version_file": "package.json" if (project_root / "package.json").exists() or not (project_root / "VERSION").exists() else "VERSION",
         "format": "json" if (project_root / "package.json").exists() or not (project_root / "VERSION").exists() else "plain",

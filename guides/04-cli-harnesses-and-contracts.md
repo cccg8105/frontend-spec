@@ -34,12 +34,12 @@ También dispone de los lanzadores locales [`fspec`](../fspec) y [`fspec.ps1`](.
 
 | Comando | Flags Principales | Propósito |
 | :--- | :--- | :--- |
-| `fspec init [ruta]` | `--dir`, `--harness {all,antigravity,cursor,claude,windsurf}`, `--versioning {semver,calver,sequential}`, `--ecosystem {nextjs,nuxt,sveltekit,astro,angular,vue-vite,react-vite}`, `--mode {auto,greenfield,brownfield}`, `-i/--interactive`, `-f/--force` | Inicializa `.spec/`, `docs/`, blueprints, reglas del harness, skills, `.graphifyignore`, `.gitignore` y hook `pre-commit` distinguiendo directorio vacío, scaffold inicial y Brownfield. |
+| `fspec init [ruta]` | `--dir`, `--harness {all,antigravity,cursor,claude,windsurf}`, `--versioning {semver,calver,sequential}`, `--ecosystem {nextjs,remix,nuxt,sveltekit,solid,qwik,astro,angular,vue-vite,react-vite}`, `--mode {auto,greenfield,brownfield}`, `-i/--interactive`, `-f/--force` | Inicializa `.spec/`, `docs/`, blueprints, reglas del harness, skills, `.graphifyignore`, `.gitignore` y hook `pre-commit` distinguiendo directorio vacío, scaffold inicial y Brownfield. |
 | `fspec update [ruta]` | `--dir`, `--harness`, `--dry-run`, `--refresh-stack` | Actualiza de forma idempotente `.spec/templates/`, skills, comandos `/ui-*`, bloques delimitados de reglas y hook `pre-commit` **sin destruir `docs/` existentes**. Con `--refresh-stack`, re-detecta `package.json` y sincroniza `.spec/config.yaml` y `tech-stack.md`. |
-| `fspec bootstrap [ruta]` | `--dir`, `--mode {auto,full,progressive}`, `--reset` | Escanea un proyecto existente (Brownfield), actualiza `tech-stack.md` / `.spec/config.yaml` y genera `.spec/bootstrap-report.md` preservando casillas `- [x]`. |
+| `fspec bootstrap [ruta]` | `--dir`, `--mode {auto,full,progressive}`, `--reset` | Escanea un proyecto existente (Brownfield), detecta Storybook e inventaria `*.stories.*`, actualiza `tech-stack.md` / `.spec/config.yaml` y genera `.spec/bootstrap-report.md` preservando casillas `- [x]`. |
 | `fspec req:new [titulo]` | `--dir`, `--domain`, `--priority {P1,P2,P3}`, `--impact {MAJOR,MINOR,PATCH}`, `--version`, `--uf`, `--tokens`, `--fast-track`, `--from-audit` | Crea bloques `REQ-UI-*` en `docs/backlog/pending.md` (o promueve hallazgos `AUDIT-UI-*`), sugiere FSM según dominio y sincroniza índices. |
-| `fspec sync [ruta]` | `--dir` | Reconstruye de forma idempotente las tablas y resúmenes en `docs/backlog/index.md` y `docs/functional/index.md`. |
-| `fspec check [ruta]` | `--dir`, `--staged` | Valida enlaces relativos, `artifact_type`, sintaxis Mermaid, tokens, Rolling Window (`<= 3` filas en `## Historial de Revisiones`), esquemas `.spec/specs/*.json` contra Draft-07, consistencia de `Referencia Funcional` no vacía en no-`PATCH`, y fronteras de archivos modificados en Git staging (`--staged`). |
+| `fspec sync [ruta]` | `--dir`, `--export-tokens` | Reconstruye de forma idempotente las tablas y resúmenes en `docs/backlog/index.md`, `docs/functional/index.md` y `docs/design/index.md`; con `--export-tokens` genera `.spec/specs/design.tokens.json` en formato W3C DTCG. |
+| `fspec check [ruta]` | `--dir`, `--staged`, `--strict-tokens` | Valida enlaces relativos, `artifact_type`, sintaxis Mermaid, tokens, sidecars `*.tokens.json` (W3C DTCG), Rolling Window (`<= 3` filas en `## Historial de Revisiones`), esquemas `.spec/specs/*.json` contra Draft-07, consistencia de `Referencia Funcional` no vacía en no-`PATCH`, commits staged (`--staged`) y hexadecimales quemados en componentes UI (`--strict-tokens`). |
 | `fspec resolve <REQ-ID>` | `--dir`, `--bump`, `--force-version` | Archiva un requerimiento en `docs/backlog/changelog.md` manteniendo Rolling Window y actualiza opcionalmente la versión en el manifiesto (`package.json` y `.spec/config.yaml`) bloqueando downgrades salvo `--force-version`. |
 
 ---
@@ -64,11 +64,11 @@ frontend-spec/
 │
 ├── cli/                                      # Motor CLI determinista en biblioteca estándar Python
 │   ├── main.py                               # Punto de entrada CLI UTF-8
-│   ├── tests/                                # Matriz modular de 6 suites (17 pruebas unitarias, integración y E2E)
+│   ├── tests/                                # Matriz modular de 6 suites (24 pruebas unitarias, integración y E2E)
 │   └── frontend_spec/
 │       ├── commands/                         # 7 subcomandos: init, update, bootstrap, req:new, sync, check, resolve
-│       ├── detector/                         # Detectores multi-ecosistema (7 perfiles) y version_extractor
-│       └── validator/                        # Validador Draft-07, enlaces, Mermaid, Rolling Window y --staged
+│       ├── detector/                         # Detectores multi-ecosistema (10 perfiles + Storybook) y version_extractor
+│       └── validator/                        # Validador Draft-07, W3C DTCG, tokens quemados, enlaces, Mermaid y --staged
 │
 ├── schemas/                                  # 8 contratos JSON Schema Draft-07 (cero dependencias)
 ├── harnesses/                                # Reglas gestionadas por IDE/CLI (antigravity, claude, cursor, windsurf)

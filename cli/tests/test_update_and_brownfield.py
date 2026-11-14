@@ -194,6 +194,35 @@ class TestUpdateAndBrownfield(unittest.TestCase):
         self.assertIn("# Decision Arquitectura Custom", tech_after)
         self.assertTrue(run_check(proj))
 
+    def test_storybook_detection_and_bootstrap_inventory(self):
+        proj = self.tmp / "storybook-qwik-app"
+        (proj / "src" / "components").mkdir(parents=True)
+        (proj / ".storybook").mkdir(parents=True)
+        (proj / "package.json").write_text(
+            json.dumps(
+                {
+                    "name": "sb-app",
+                    "version": "1.0.0",
+                    "dependencies": {"@builder.io/qwik": "1.9.0", "@builder.io/qwik-city": "1.9.0"},
+                    "devDependencies": {"@storybook/html-vite": "8.4.0", "@storybook/addon-a11y": "8.4.0"},
+                }
+            ),
+            encoding="utf-8",
+        )
+        (proj / "src" / "components" / "Card.tsx").write_text("export const Card = () => null;", encoding="utf-8")
+        (proj / "src" / "components" / "Card.stories.tsx").write_text("export default { title: 'UI/Card' };", encoding="utf-8")
+
+        run_init(proj, harness="antigravity")
+        report_path = run_bootstrap(proj, mode="auto")
+        report_txt = report_path.read_text(encoding="utf-8")
+        self.assertIn("Storybook:** Detectado (1 archivos `*.stories.*`)", report_txt)
+        self.assertIn("src/components/Card.stories.tsx", report_txt)
+
+        tech_txt = (proj / "docs" / "technical" / "tech-stack.md").read_text(encoding="utf-8")
+        self.assertIn("Qwik (Qwik City)", tech_txt)
+        self.assertIn("Storybook", tech_txt)
+        self.assertTrue(run_check(proj))
+
 
 if __name__ == "__main__":
     unittest.main()

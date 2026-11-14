@@ -30,8 +30,11 @@ export interface ComponentContractProps {
 
 ### Adaptación por Ecosistema:
 - **React / Next.js:** Props tipadas en `ComponentContractProps` + callbacks `on*`.
+- **Remix:** Datos cargados vía `loader` (`useLoaderData`) + mutaciones progresivas con `<Form>` / `useFetcher` evitando estado remoto duplicado y aislando módulos `.client.tsx` / `.server.ts`.
 - **Vue / Nuxt:** `defineProps<Omit<ComponentContractProps, "onUpdateRole">>()` + `defineEmits<{ updateRole: [newRole: string] }>()`.
 - **Svelte / SvelteKit:** `$props()` tipado con `ComponentContractProps`.
+- **SolidJS:** Primitivas `createSignal()` / `createMemo()` y flujo declarativo `<Show>` / `<For>` sin desestructurar `props` para preservar la reactividad granular.
+- **Qwik:** Envoltura `component$()`, estado con `useSignal()` / `useStore()` y callbacks serializables `PropFunction<T>` (sufijo `$` para límites QRL).
 - **Angular:** Signals `input.required<string>()` / `input<...>()` + `output<string>()`.
 
 ---
@@ -67,6 +70,26 @@ stateDiagram-v2
 | :--- | :--- | :--- |
 | Botón primario | `role="button"`, `aria-busy` | Activable con `Enter` y `Space`; foco visible obligatorio |
 | Mensaje de estado/error | `role="alert"` o `aria-live="polite"` | Anunciado sin robar foco salvo error bloqueante |
+
+---
+
+## 5. Catálogo Visual e Historias Storybook (Opcional — CSF 3.0)
+
+> *Completar únicamente cuando el proyecto utiliza Storybook (`has_storybook: true` en `.spec/bootstrap-report.md`).*
+
+### Matriz de Historias Recomendadas (`Component.stories.tsx`)
+
+| Historia | Estado / Escenario | Objetivo de Verificación Visual y Funcional |
+| :--- | :--- | :--- |
+| `Default` | Datos completos en modo `light` | Render base y consumo de tokens semánticos |
+| `Loading` | Esqueleto / `aria-busy="true"` | Estabilidad de layout (CLS = 0) y spinner accesible |
+| `Empty` | Colección vacía o placeholder | Copy accionable y contraste WCAG 2.1 AA |
+| `Error` | Falla controlada RFC 7807 | Visibilidad de `role="alert"` y botón de reintento |
+| `DarkMode` | Tema `.dark` / `data-theme="dark"` | Simetría claro/oscuro sin colores hexadecimales quemados |
+
+### Contrato Automatizado en Storybook:
+- **Accesibilidad:** Activar `@storybook/addon-a11y` con auditoría WCAG 2.1 AA sin violaciones `critical` o `serious`.
+- **Pruebas de Interacción (`play`):** Usar `@storybook/test` (`within`, `userEvent`, `expect`) para validar foco por teclado y transiciones clave de la FSM directamente sobre las historias.
 
 ---
 

@@ -66,6 +66,10 @@ def _resolve_component_artifact(
         return f"{src_dir}/lib/components/{dom}/{slug_pascal}.svelte"
     if ecosystem == "astro":
         return f"{src_dir}/components/{dom}/{slug_pascal}.astro"
+    if ecosystem in ("remix", "solid"):
+        return f"{src_dir}/components/{dom}/{slug_pascal}.tsx"
+    if ecosystem == "qwik":
+        return f"{src_dir}/components/{dom}/{slug_pascal}/{slug_pascal}.tsx"
     return f"{src_dir}/features/{dom}/{slug_pascal}.tsx"
 
 
