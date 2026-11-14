@@ -1,6 +1,6 @@
 [project]
 name = "frontend-spec"
-version = "1.0.0"
+version = "1.0.1"
 description = "CLI tool and framework for Spec-Driven Frontend development with AI agents"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -28,6 +28,7 @@ include = [
   "templates/**",
   "harnesses/**",
   "schemas/**",
+  "guides/**",
   "agent-prompts/**",
   "README.md",
   "CHANGELOG.md",

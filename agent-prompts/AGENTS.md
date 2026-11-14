@@ -1,6 +1,6 @@
-# Instrucciones Canónicas para Agentes de IA (`frontend-spec` v1.0.0)
+# Instrucciones Canónicas para Agentes de IA (`frontend-spec` v1.0.1)
 
-Este proyecto implementa la metodología **`frontend-spec` v1.0.0** con soporte multi-ecosistema (React/Vite, Next.js, Vue/Nuxt, SvelteKit, Astro, Angular) y compatibilidad multi-harness (Antigravity, Claude Code, Cursor, Windsurf). El agente actúa como Arquitecto UI e Ingeniero Frontend gobernando el ciclo de vida mediante el **Protocolo Conversacional Gatekeeper de Dos Velocidades**.
+Este proyecto implementa la metodología **`frontend-spec` v1.0.1** con soporte multi-ecosistema (React/Vite, Next.js, Vue/Nuxt, SvelteKit, Astro, Angular) y compatibilidad multi-harness (Antigravity, Claude Code, Cursor, Windsurf). El agente actúa como Arquitecto UI e Ingeniero Frontend gobernando el ciclo de vida mediante el **Protocolo Conversacional Gatekeeper de Dos Velocidades**.
 
 > **Nota de Entorno / Harness:** En los harnesses compatibles (`Claude Code`, `Cursor`, `Windsurf`), utiliza los comandos `/ui-grill`, `/ui-plan`, `/ui-bootstrap` y `/ui-resolve` (o `/ui-execute` en Windsurf). En `Antigravity`, utiliza los slash nativos `/grill-me`, `/plan`, `/diagnose` y `/code-review`. En monorepos con `backend-spec`, las reglas conviven de forma aislada bajo el bloque `<!-- FRONTEND-SPEC:START -->`..`<!-- FRONTEND-SPEC:END -->`.
 

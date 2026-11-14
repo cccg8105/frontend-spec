@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# frontend-spec v1.0.0 - Pre-commit Hook (Integridad Documental & Anti-Fantasmas)
+# frontend-spec v1.0.1 - Pre-commit Hook (Integridad Documental & Anti-Fantasmas)
 # ==============================================================================
 
 # FRONTEND-SPEC:START

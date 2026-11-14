@@ -25,6 +25,22 @@ Las versiones del framework se estructuran bajo `MAJOR.MINOR.PATCH` (mientras el
 
 ---
 
+## [1.0.1] - 2026-11-14
+
+### Added
+- Directorio modular `guides/` con 4 guías operativas por escenario de uso:
+  - `guides/01-new-projects-greenfield.md`: flujo recomendado para proyectos nuevos con scaffold (`create-vite`, `create-next-app`, `nuxi`, `ng new`) vs. repositorios totalmente vacíos (*Zero-File Spec-First*), orden de commits para evitar bloqueos de `pre-commit` y Ceremonia de Fundación (`REQ-UI-CORE-001`).
+  - `guides/02-existing-projects-brownfield.md`: adopción paso a paso en repositorios existentes (`fspec init`, `fspec bootstrap`, `/ui-bootstrap`, modo `progressive` vs. `full`, expansión *Just-In-Time* y promoción `--from-audit`).
+  - `guides/03-daily-workflow-two-speeds.md`: operación diaria del Carril Completo (`MAJOR`/`MINOR`) vs. Fast-Track (`PATCH`) y matriz de comandos por harness.
+  - `guides/04-cli-harnesses-and-contracts.md`: referencia técnica completa del CLI, estructura real del framework y del proyecto consumidor, coexistencia en monorepos y contratos `v1.0.0+`.
+
+### Changed
+- Reestructuración de `README.md` bajo el patrón Hub & Spoke como portada ejecutiva ligera que enlaza directamente a cada guía de `guides/`, reduciendo la carga cognitiva inicial sin perder profundidad técnica.
+- Inclusión de `guides/**` en la distribución fuente (`sdist`) de `pyproject.toml`, manteniendo el paquete instalable `wheel` libre de `guides/` y `examples/`.
+- Sincronización de versión `1.0.1` en `pyproject.toml`, CLI y plantillas base.
+
+---
+
 ## [1.0.0] - 2026-11-14
 
 ### Added
