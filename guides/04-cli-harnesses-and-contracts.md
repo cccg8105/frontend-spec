@@ -37,6 +37,12 @@ gh api "repos/{owner}/{repo}/dependabot/alerts?state=open&per_page=1"
 # Instalación global recomendada desde GitHub (uv)
 uv tool install git+https://github.com/cccg8105/frontend-spec.git
 
+# Instalación reproducible fijada a un tag de release (recomendada para equipos/CI)
+uv tool install git+https://github.com/cccg8105/frontend-spec.git@v1.3.0
+
+# Instalación directa desde el wheel publicado en GitHub Releases (sin clonar el repo)
+uv tool install https://github.com/cccg8105/frontend-spec/releases/download/v1.3.0/frontend_spec-1.3.0-py3-none-any.whl
+
 # Alternativa con pipx o ejecución efímera sin instalación global
 pipx install git+https://github.com/cccg8105/frontend-spec.git
 uvx --from git+https://github.com/cccg8105/frontend-spec.git frontend-spec --version
