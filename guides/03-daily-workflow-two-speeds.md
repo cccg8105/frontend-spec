@@ -43,12 +43,18 @@ Aplica para nuevas vistas, rutas, componentes complejos, cambios en el sistema d
    fspec req:new "Tabla de analitica con exportacion CSV" --domain DASH --impact MINOR --uf docs/functional/user-flows/UF-DASH-001-analytics-datatable.md
    ```
    El agente prepara el plan de fronteras exactas (`[NEW]`, `[MODIFY]`, `[DELETE]`) y los tests iniciales (Vitest/Testing Library + `axe-core`, y Playwright E2E si el flujo es crítico). **La ejecución se detiene hasta tu aprobación (`/ui-plan` o `/plan`).**
-5. **Implementación, Verificación y Cierre:** Tras implementar únicamente los archivos declarados y aprobar pruebas unitarias, a11y, E2E y `/code-review`:
+5. **Implementación, Verificación, Integración (`Staging`) y Release (`Producción`):** Tras implementar únicamente los archivos declarados y aprobar pruebas unitarias, a11y, E2E y `/code-review`:
    ```bash
    fspec sync
    fspec check
+   # Integración en main -> despliega a Staging (sin subir versión de package.json aún):
+   fspec resolve REQ-UI-DASH-001
+
+   # Promoción a Producción -> actualiza package.json y corta el tag anotado:
    fspec resolve REQ-UI-DASH-001 --bump
+   git tag -a v1.1.0 -m "Release v1.1.0"
    ```
+   *(Para pipelines, sincronización de `.env.example` + GitHub Environments `vars.*`, cabeceras caché/CSP y pre-vuelo con `gh variable/secret list`, apoya la operación en la skill `frontend-deploy`).*
 
 ---
 

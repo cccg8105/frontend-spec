@@ -36,11 +36,13 @@ Con `package.json` y `tsconfig.json` ya presentes en disco, ejecuta:
 
 ```bash
 fspec init --dir . --harness all --versioning semver
+# Opcional: añadir guardrail CI en GitHub Actions (.github/workflows/frontend-spec-check.yml)
+# fspec init --dir . --harness all --versioning semver --ci github
 # Si ya añadiste archivos extra antes de inicializar, puedes forzar el flujo nuevo con:
 # fspec init --dir . --mode greenfield --harness all
 ```
 
-El CLI creará `.spec/`, `docs/`, las reglas de harness (Antigravity, Claude Code, Cursor, Windsurf) y el hook `pre-commit`, pre-poblando `docs/technical/tech-stack.md` con tu framework, gestor de paquetes, librerías CSS y runners detectados.
+El CLI creará `.spec/`, `docs/`, las reglas y skills (Antigravity, Claude Code, Cursor, Windsurf, incluyendo `frontend-deploy`) y el hook `pre-commit`, pre-poblando `docs/technical/tech-stack.md` con tu framework, gestor de paquetes, librerías CSS y runners detectados. Si pasaste `--ci github`, también instalará `.github/workflows/frontend-spec-check.yml`.
 
 > **Detección inteligente de Scaffold (`v1.1.0+`):** Cuando existe `package.json` con un boilerplate mínimo (`<= 2` archivos UI y sin carpetas `features/` ni tests propios), `fspec init` clasifica automáticamente el repositorio como *Fresh Scaffold* y te guía hacia la Ceremonia de Fundación (`REQ-UI-CORE-001`) en lugar de sugerir `fspec bootstrap`.
 
@@ -50,6 +52,7 @@ Antes de implementar funcionalidades de negocio, define la base visual y estruct
 
 1. **Identidad visual y Design Tokens (`docs/design/tokens-and-themes.md`):** Pide al agente definir paleta claro/oscuro, tipografías, espaciado, radios y variables CSS/Tailwind evitando valores arbitrarios.
 2. **Arquitectura inicial (`docs/technical/routing-and-rendering.md` y `docs/technical/component-hierarchy.md`):** Define rutas raíz, layouts, Error Boundaries y estrategia CSR/SSR/SSG.
+3. **Estrategia CI/CD y contrato de variables (`docs/technical/deployment-strategy.md` + `.env.example`):** Activa la skill `frontend-deploy` para alinear el flujo `PR -> CI (+ Preview)`, `main -> Staging`, `tag vX.Y.Z -> Producción` (o adaptación PaaS/monorepo), declarar variables públicas sin secretos y generar `ci.yml`/`cd.yml` a medida de tu infraestructura.
 3. **Primer requerimiento fundacional (`REQ-UI-CORE-001`):**
    - Crea primero el flujo base (ej. `docs/functional/user-flows/UF-CORE-001-app-shell.md` siguiendo `.spec/templates/_template_user_flow.md`).
    - Registra el requerimiento en `docs/backlog/pending.md`:

@@ -9,6 +9,7 @@ CLI_DIR = Path(__file__).resolve().parent.parent
 if str(CLI_DIR) not in sys.path:
     sys.path.insert(0, str(CLI_DIR))
 
+from frontend_spec import __version__
 from frontend_spec.commands.bootstrap_cmd import run_bootstrap
 from frontend_spec.commands.check_cmd import run_check
 from frontend_spec.commands.init_cmd import run_init
@@ -222,6 +223,43 @@ class TestUpdateAndBrownfield(unittest.TestCase):
         self.assertIn("Qwik (Qwik City)", tech_txt)
         self.assertIn("Storybook", tech_txt)
         self.assertTrue(run_check(proj))
+
+    def test_ci_github_opt_in_dry_run_and_preservation(self):
+        # 1. init por defecto (--ci none) no crea .github/workflows
+        proj_default = self.tmp / "app-default"
+        proj_default.mkdir()
+        run_init(proj_default, harness="antigravity")
+        self.assertFalse((proj_default / ".github").exists())
+
+        # 2. init --ci github instala workflow gestionado pineado a @v{__version__}
+        proj_ci = self.tmp / "app-ci"
+        proj_ci.mkdir()
+        run_init(proj_ci, harness="antigravity", ci="github")
+        wf_path = proj_ci / ".github" / "workflows" / "frontend-spec-check.yml"
+        self.assertTrue(wf_path.exists())
+        wf_txt = wf_path.read_text(encoding="utf-8")
+        self.assertIn("# FRONTEND-SPEC-CI-MANAGED", wf_txt)
+        self.assertIn(f"@v{__version__}", wf_txt)
+
+        # 3. update --ci github --dry-run no modifica disco
+        self.assertTrue(run_update(proj_default, harness="antigravity", dry_run=True, ci="github"))
+        self.assertFalse((proj_default / ".github" / "workflows" / "frontend-spec-check.yml").exists())
+
+        # 4. update --ci github respeta workflows existentes (ci.yml)
+        user_ci = proj_default / ".github" / "workflows" / "ci.yml"
+        user_ci.parent.mkdir(parents=True, exist_ok=True)
+        user_ci.write_text("name: App CI\n", encoding="utf-8")
+
+        self.assertTrue(run_update(proj_default, harness="antigravity", dry_run=False, ci="github"))
+        managed_wf = proj_default / ".github" / "workflows" / "frontend-spec-check.yml"
+        self.assertTrue(managed_wf.exists())
+        self.assertEqual(user_ci.read_text(encoding="utf-8"), "name: App CI\n")
+
+        # 5. Si el usuario retira el marcador gestionado, update lo preserva intacto
+        custom_body = "name: Custom Frontend Check\n"
+        managed_wf.write_text(custom_body, encoding="utf-8")
+        self.assertTrue(run_update(proj_default, harness="antigravity", dry_run=False, ci="github"))
+        self.assertEqual(managed_wf.read_text(encoding="utf-8"), custom_body)
 
 
 if __name__ == "__main__":

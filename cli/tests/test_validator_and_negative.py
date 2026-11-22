@@ -14,7 +14,11 @@ if str(CLI_DIR) not in sys.path:
 from frontend_spec.commands.check_cmd import audit_github_dependabot_alerts, run_check
 from frontend_spec.commands.init_cmd import run_init
 from frontend_spec.commands.new_req_cmd import run_new_req
-from frontend_spec.validator.schema_validator import count_rolling_history_rows
+from frontend_spec.validator.schema_validator import (
+    count_rolling_history_rows,
+    load_json_schema,
+    validate_against_schema,
+)
 
 
 class TestValidatorAndNegative(unittest.TestCase):
@@ -250,6 +254,58 @@ class TestValidatorAndNegative(unittest.TestCase):
             self.assertEqual(len(sec_warns), 1)
             self.assertIn("postcss", sec_warns[0])
             self.assertFalse(run_check(proj, check_security=True))
+
+    def test_deployment_strategy_schema_retrocompatibility(self):
+        schema = load_json_schema("technical/deployment-strategy.schema.json")
+        self.assertIsNotNone(schema)
+
+        legacy_payload = {
+            "artifact_type": "deployment-strategy",
+            "hosting_model": "static-cdn",
+            "pipeline_diagram_mermaid": "flowchart LR\nA-->B",
+            "public_env_vars": [
+                {"name": "VITE_API_BASE_URL", "purpose": "API gateway URL", "is_secret": False}
+            ],
+            "security_headers": ["Content-Security-Policy"],
+            "rollback_strategy": "Atomic CDN rollback",
+        }
+        self.assertEqual(validate_against_schema(legacy_payload, schema), [])
+
+        enriched_payload = {
+            **legacy_payload,
+            "branching_model": "github-flow",
+            "environments": {
+                "preview": {"trigger": "pull_request"},
+                "staging": {"trigger": "push:main", "github_environment": "staging"},
+                "production": {"trigger": "tag:v*.*.*", "github_environment": "production"},
+            },
+            "public_env_vars": [
+                {
+                    "name": "VITE_APP_ENV",
+                    "purpose": "Runtime environment label",
+                    "is_secret": False,
+                    "required": True,
+                    "ci_source": "github_var",
+                    "environments": ["local", "preview", "staging", "production"],
+                }
+            ],
+        }
+        self.assertEqual(validate_against_schema(enriched_payload, schema), [])
+
+        invalid_payload = {
+            **enriched_payload,
+            "branching_model": "invalid-flow",
+            "public_env_vars": [
+                {
+                    "name": "VITE_APP_ENV",
+                    "purpose": "Runtime environment label",
+                    "is_secret": False,
+                    "ci_source": "unsupported_source",
+                }
+            ],
+        }
+        errs = validate_against_schema(invalid_payload, schema)
+        self.assertEqual(len(errs), 2)
 
 
 if __name__ == "__main__":

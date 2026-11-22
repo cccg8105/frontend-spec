@@ -65,8 +65,8 @@ También dispone de los lanzadores locales [`fspec`](../fspec) y [`fspec.ps1`](.
 
 | Comando | Flags Principales | Propósito |
 | :--- | :--- | :--- |
-| `fspec init [ruta]` | `--dir`, `--harness {all,antigravity,cursor,claude,windsurf}`, `--versioning {semver,calver,sequential}`, `--ecosystem {nextjs,remix,nuxt,sveltekit,solid,qwik,astro,angular,vue-vite,react-vite}`, `--mode {auto,greenfield,brownfield}`, `-i/--interactive`, `-f/--force` | Inicializa `.spec/`, `docs/`, blueprints, reglas del harness, skills, `.graphifyignore`, `.gitignore` y hook `pre-commit` distinguiendo directorio vacío, scaffold inicial y Brownfield. |
-| `fspec update [ruta]` | `--dir`, `--harness`, `--dry-run`, `--refresh-stack` | Actualiza de forma idempotente `.spec/templates/`, skills, comandos `/ui-*`, bloques delimitados de reglas y hook `pre-commit` **sin destruir `docs/` existentes**. Con `--refresh-stack`, re-detecta `package.json` y sincroniza `.spec/config.yaml` y `tech-stack.md`. |
+| `fspec init [ruta]` | `--dir`, `--harness {all,antigravity,cursor,claude,windsurf}`, `--versioning {semver,calver,sequential}`, `--ecosystem {nextjs,remix,nuxt,sveltekit,solid,qwik,astro,angular,vue-vite,react-vite}`, `--mode {auto,greenfield,brownfield}`, `--ci {none,github}`, `-i/--interactive`, `-f/--force` | Inicializa `.spec/`, `docs/`, blueprints, reglas del harness, skills (incluyendo `frontend-deploy`), `.graphifyignore`, `.gitignore`, hook `pre-commit` y opcionalmente el guardrail `.github/workflows/frontend-spec-check.yml` (`--ci github`). |
+| `fspec update [ruta]` | `--dir`, `--harness`, `--dry-run`, `--refresh-stack`, `--ci {none,github}` | Actualiza de forma idempotente `.spec/templates/`, skills, comandos `/ui-*`, bloques delimitados de reglas, hook `pre-commit` y workflow CI gestionado (`# FRONTEND-SPEC-CI-MANAGED`) **sin destruir `docs/` existentes**. Con `--refresh-stack`, re-detecta `package.json` y sincroniza `.spec/config.yaml` y `tech-stack.md`. |
 | `fspec bootstrap [ruta]` | `--dir`, `--mode {auto,full,progressive}`, `--reset` | Escanea un proyecto existente (Brownfield), detecta Storybook e inventaria `*.stories.*`, actualiza `tech-stack.md` / `.spec/config.yaml` y genera `.spec/bootstrap-report.md` preservando casillas `- [x]`. |
 | `fspec req:new [titulo]` | `--dir`, `--domain`, `--priority {P1,P2,P3}`, `--impact {MAJOR,MINOR,PATCH}`, `--version`, `--uf`, `--tokens`, `--fast-track`, `--from-audit` | Crea bloques `REQ-UI-*` en `docs/backlog/pending.md` (o promueve hallazgos `AUDIT-UI-*`), sugiere FSM según dominio y sincroniza índices. |
 | `fspec sync [ruta]` | `--dir`, `--export-tokens` | Reconstruye de forma idempotente las tablas y resúmenes en `docs/backlog/index.md`, `docs/functional/index.md` y `docs/design/index.md`; con `--export-tokens` genera `.spec/specs/design.tokens.json` en formato W3C DTCG. |
@@ -127,7 +127,9 @@ mi-app-frontend/
 │   └── backlog/                              # index.md, pending.md, audit-proposals.md, changelog.md, versioning-strategy.md
 ├── .gitignore / .graphifyignore              # Exclusiones frontend para Git y Graphify
 ├── .git/hooks/pre-commit                     # Guardrail Git portable (fspec check --staged)
-└── [Adaptadores del harness]                 # .gemini/, CLAUDE.md + .claude/, .cursor/, .windsurfrules + .windsurf/
+├── .github/workflows/
+│   └── frontend-spec-check.yml               # Guardrail CI opt-in (--ci github, gestionado con marcador)
+└── [Adaptadores del harness]                 # .gemini/, CLAUDE.md + .claude/, .cursor/, .windsurfrules + .windsurf/ (incl. skill frontend-deploy)
 ```
 
 ---

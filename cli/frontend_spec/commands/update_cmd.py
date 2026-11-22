@@ -5,6 +5,7 @@ import stat
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
+from frontend_spec import __version__
 from frontend_spec.commands.bootstrap_cmd import _update_tech_stack_sync
 from frontend_spec.commands.check_cmd import run_check
 from frontend_spec.commands.sync_index_cmd import run_sync_index
@@ -190,6 +191,41 @@ def update_pre_commit_hook(target_dir: Path, hook_src: Path, dry_run: bool = Fal
     return "INJECTED_INTO_EXISTING"
 
 
+def update_github_ci_workflow(
+    target_dir: Path,
+    templates_root: Path,
+    ci: Optional[str] = None,
+    force: bool = False,
+    dry_run: bool = False,
+) -> str:
+    """Instala o actualiza el workflow gestionado .github/workflows/frontend-spec-check.yml."""
+    if ci == "none":
+        return "SKIPPED"
+
+    src_wf = templates_root / ".github" / "workflows" / "frontend-spec-check.yml"
+    if not src_wf.exists():
+        return "MISSING_TEMPLATE"
+
+    rendered = src_wf.read_text(encoding="utf-8").replace("{{FRAMEWORK_VERSION}}", __version__)
+    dest_wf = target_dir / ".github" / "workflows" / "frontend-spec-check.yml"
+
+    if not dest_wf.exists():
+        if ci != "github":
+            return "NOT_INSTALLED"
+        if not dry_run:
+            dest_wf.parent.mkdir(parents=True, exist_ok=True)
+            dest_wf.write_text(rendered, encoding="utf-8")
+        return "CREATED"
+
+    existing = dest_wf.read_text(encoding="utf-8", errors="ignore")
+    if "# FRONTEND-SPEC-CI-MANAGED" in existing or force:
+        if not dry_run:
+            dest_wf.write_text(rendered, encoding="utf-8")
+        return "UPDATED"
+
+    return "SKIPPED_CUSTOM"
+
+
 def install_harness_skills(
     target_dir: Path,
     templates_root: Path,
@@ -226,6 +262,7 @@ def install_harness_skills(
         "antigravity": (
             "frontend-spec",
             "frontend-bootstrap",
+            "frontend-deploy",
             "frontend-design",
             "theme-factory",
             "webapp-testing",
@@ -233,6 +270,7 @@ def install_harness_skills(
         "claude": (
             "frontend-spec",
             "frontend-bootstrap",
+            "frontend-deploy",
             "ui-grill",
             "frontend-design",
             "theme-factory",
@@ -241,6 +279,7 @@ def install_harness_skills(
         "cursor": (
             "frontend-spec",
             "frontend-bootstrap",
+            "frontend-deploy",
             "ui-grill",
             "frontend-design",
             "theme-factory",
@@ -249,6 +288,7 @@ def install_harness_skills(
         "windsurf": (
             "frontend-spec",
             "frontend-bootstrap",
+            "frontend-deploy",
             "ui-grill",
             "frontend-design",
             "theme-factory",
@@ -464,6 +504,7 @@ def run_update(
     harness: Optional[str] = None,
     dry_run: bool = False,
     refresh_stack: bool = False,
+    ci: Optional[str] = None,
 ) -> bool:
     """Actualiza plantillas, skills, reglas gestionadas y hook pre-commit sin tocar docs/ existentes."""
     target_dir = Path(target_dir).resolve()
@@ -535,6 +576,18 @@ def run_update(
         hook_res = update_pre_commit_hook(target_dir, hook_src, dry_run=dry_run)
         if hook_res != "NO_GIT":
             print(f"[OK] {mode_label}.git/hooks/pre-commit: {hook_res}")
+
+    # 5b. Guardrail CI GitHub Actions opt-in
+    ci_res = update_github_ci_workflow(
+        target_dir, templates_root, ci=ci, force=False, dry_run=dry_run
+    )
+    if ci_res in ("CREATED", "UPDATED"):
+        print(f"[OK] {mode_label}.github/workflows/frontend-spec-check.yml: {ci_res}")
+    elif ci_res == "SKIPPED_CUSTOM":
+        print(
+            f"[INFO] {mode_label}.github/workflows/frontend-spec-check.yml personalizado detectado "
+            "(conservado sin sobrescribir)"
+        )
 
     # 6. Sincronizar e inspeccionar
     if not dry_run:

@@ -42,6 +42,7 @@ class TestCLIWorkflow(unittest.TestCase):
         # Cero placeholders residuales en docs, config.yaml ni skills instaladas
         check_files = [proj / ".spec" / "config.yaml", *(proj / "docs").rglob("*.md")]
         for sk_dir in (".gemini/skills", ".claude/skills", ".cursor/skills", ".windsurf/skills"):
+            self.assertTrue((proj / sk_dir / "frontend-deploy" / "SKILL.md").exists())
             check_files.extend((proj / sk_dir).rglob("SKILL.md"))
         for p in check_files:
             txt = p.read_text(encoding="utf-8")

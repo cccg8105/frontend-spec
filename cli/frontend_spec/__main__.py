@@ -48,6 +48,12 @@ def main() -> None:
         default="auto",
         help="Fuerza deteccion Greenfield o Brownfield (por defecto auto)",
     )
+    init_p.add_argument(
+        "--ci",
+        choices=["none", "github"],
+        default="none",
+        help="Instala guardrail CI de gobernanza (ej. github -> .github/workflows/frontend-spec-check.yml)",
+    )
     init_p.add_argument("--dir", default=".", help="Directorio destino")
 
     upd_p = subparsers.add_parser(
@@ -69,6 +75,12 @@ def main() -> None:
         "--refresh-stack",
         action="store_true",
         help="Re-detecta package.json/stack y sincroniza .spec/config.yaml y tech-stack.md sin destruir docs/",
+    )
+    upd_p.add_argument(
+        "--ci",
+        choices=["none", "github"],
+        default=None,
+        help="Instala o actualiza guardrail CI de gobernanza (por defecto actualiza solo si ya existe gestionado)",
     )
     upd_p.add_argument("--dir", default=".", help="Directorio del proyecto")
 
@@ -168,6 +180,7 @@ def main() -> None:
             force=args.force,
             ecosystem=args.ecosystem,
             mode=args.mode,
+            ci=args.ci,
         )
     elif args.command == "update":
         ok = run_update(
@@ -175,6 +188,7 @@ def main() -> None:
             harness=args.harness,
             dry_run=args.dry_run,
             refresh_stack=args.refresh_stack,
+            ci=args.ci,
         )
         sys.exit(0 if ok else 1)
     elif args.command == "bootstrap":

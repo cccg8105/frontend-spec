@@ -80,3 +80,9 @@ Ante alertas de vulnerabilidades en paquetes detectadas por GitHub Dependabot o 
    - **Sin parche disponible o falso positivo en tooling de desarrollo:** Presenta la evidencia al usuario y consulta si desea aplicar un *workaround* o descartar la alerta en GitHub con motivo explícito.
 4. **Trazabilidad Gatekeeper (`REQ-UI-SEC-XXX`) y Ejecución:** Registra `fspec req:new "Remediacion Dependabot: <paquete/GHSA>" --domain SEC --impact PATCH` declarando `package.json` y el lockfile en `Fronteras y Artefactos`. Aplica el bump mínimo seguro a `first_patched_version` y corre `fspec update --refresh-stack` si cambia una versión documentada en `docs/technical/tech-stack.md`.
 5. **Verificación Doble y Cierre:** Comprueba que el auditor local del gestor de paquetes quede limpio respecto a las alertas remediadas, ejecuta la suite de pruebas del proyecto (`vitest`/`jest`/`playwright`), valida con `fspec check --security` y archiva el requerimiento con `fspec resolve REQ-UI-SEC-XXX --bump`.
+
+---
+
+## CI/CD, VARIABLES PÚBLICAS POR AMBIENTE Y RELEASES (`frontend-deploy`)
+
+Para tareas de CI/CD frontend, variables públicas de build, caché/CSP, despliegues CDN/SSR/PaaS o cortes de release, activa la skill bajo demanda `frontend-deploy`: sigue el flujo `PR -> CI (+ Preview)`, `main -> Staging`, `tag vX.Y.Z -> Producción`, mantén sincronizados `docs/technical/deployment-strategy.md`, `.env.example` y `vars.*` (cero secretos en el cliente) y audita ambientes vía `gh variable list` / `gh secret list`.

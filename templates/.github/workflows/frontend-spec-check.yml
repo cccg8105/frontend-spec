@@ -1,0 +1,26 @@
+# FRONTEND-SPEC-CI-MANAGED
+name: frontend-spec Governance Check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  spec-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install frontend-spec CLI
+        run: python -m pip install --no-cache-dir "git+https://github.com/cccg8105/frontend-spec.git@v{{FRAMEWORK_VERSION}}"
+
+      - name: Validate specification integrity
+        run: frontend-spec check
+        # Opcional: agrega '--strict-tokens' o '--security' (si GITHUB_TOKEN incluye security_events)
+        # En monorepos, agrega filtros paths: bajo on.pull_request y on.push

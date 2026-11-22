@@ -14,24 +14,28 @@ flowchart LR
     C --> D["Unit + axe Tests"]
     D --> E["Build + Bundle Budget Check"]
     E --> F["Playwright E2E + Viewports"]
-    F --> G{"Rama?"}
-    G -->|PR| H["Preview Deploy"]
-    G -->|main / tag| I["Deploy Producción"]
-    I --> J{"Smoke & Web Vitals OK?"}
-    J -- Sí --> K["Release Confirmado"]
-    J -- No --> L["Rollback Instantáneo CDN / Contenedor"]
+    F --> G{"Evento?"}
+    G -->|"PR"| H["Preview Deploy (opcional)"]
+    G -->|"main"| I["Deploy Staging (GitHub Env: staging)"]
+    I --> J["Smoke & Web Vitals Staging"]
+    G -->|"tag vX.Y.Z"| K["Deploy Producción (GitHub Env: production)"]
+    K --> L{"Smoke & Web Vitals OK?"}
+    L -- Sí --> M["Release Confirmado"]
+    L -- No --> N["Rollback Instantáneo CDN / Contenedor"]
 ```
+
+> **Convención de Ramas y Excepciones:** Estándar `PR -> CI (+ Preview)`, `main -> Staging` (`fspec resolve <REQ-UI-ID>`) y `tag vX.Y.Z -> Producción` (`fspec resolve <REQ-UI-ID> --bump` + tag anotado). En PaaS (Vercel/Netlify/Cloudflare Pages) documenta el comportamiento nativo de previews; en monorepos usa filtros `paths:` y tags prefijados (`web-vX.Y.Z`).
 
 ---
 
-## 2. Variables de Entorno Públicas (Sin Secretos)
+## 2. Variables de Entorno Públicas por Ambiente (Sin Secretos)
 
-| Variable | Prefijo del Stack | Descripción | Secreto? |
-| :--- | :--- | :--- | :--- |
-| `*_API_BASE_URL` | `VITE_` / `NEXT_PUBLIC_` / `PUBLIC_` | URL pública del API gateway | No |
-| `*_APP_ENV` | `VITE_` / `NEXT_PUBLIC_` / `PUBLIC_` | Entorno (`development` / `staging` / `production`) | No |
+| Variable | Prefijo del Stack | Descripción | Tipo CI/CD | Ambientes |
+| :--- | :--- | :--- | :--- | :--- |
+| `*_API_BASE_URL` | `VITE_` / `NEXT_PUBLIC_` / `PUBLIC_` | URL pública del API gateway | `var` (`vars.*`) | `local`, `preview`, `staging`, `production` |
+| `*_APP_ENV` | `VITE_` / `NEXT_PUBLIC_` / `PUBLIC_` | Entorno (`development` / `staging` / `production`) | `var` (`vars.*`) | `local`, `preview`, `staging`, `production` |
 
-> **Regla de Seguridad Crítica:** Cualquier variable empaquetada en cliente es pública por definición. Nunca colocar claves privadas API, secrets OAuth ni llaves de firma en variables de build del frontend.
+> **Regla de Seguridad Crítica y Contrato `.env.example`:** Cualquier variable empaquetada en cliente es pública por definición. Nunca colocar claves privadas API, secrets OAuth ni llaves de firma en variables de build del frontend, ni versionar `.env.staging`/`.env.production` con secretos. Sincroniza toda nueva variable en esta tabla, en `.env.example` y en `.github/workflows/*.yml` (`vars.*` para variables públicas; `secrets.*` solo para tokens del proveedor de deploy), y audita antes de liberar con `gh variable list --env <env>` y `gh secret list --env <env>`.
 
 ---
 

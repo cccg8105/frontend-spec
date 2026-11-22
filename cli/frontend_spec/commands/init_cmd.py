@@ -7,6 +7,7 @@ from typing import Dict, List, Optional
 from frontend_spec import __version__
 from frontend_spec.commands.update_cmd import (
     install_or_update_harness,
+    update_github_ci_workflow,
     update_pre_commit_hook,
 )
 from frontend_spec.common import HARNESS_NAMES, SCHEME_LABELS, build_doc_context, render_placeholders
@@ -26,6 +27,7 @@ def _prompt_interactive_options(
     current_version: str,
     target_dir: Path,
     ecosystem_explicit: bool = False,
+    ci: str = "none",
 ) -> Dict[str, str]:
     selected = profile
     if not ecosystem_explicit and (detection["mode"] == "greenfield" or not detection["detected"]):
@@ -49,12 +51,19 @@ def _prompt_interactive_options(
         ver_in = input(f"Version inicial [{current_version}]: ").strip()
         if ver_in:
             current_version = ver_in.lstrip("vV")
+        if ci == "none":
+            ci_in = input(
+                "Instalar guardrail CI de GitHub Actions (.github/workflows/frontend-spec-check.yml)? (s/N) [n]: "
+            ).strip().lower()
+            if ci_in in ("s", "si", "y", "yes"):
+                ci = "github"
     except Exception:
         pass
 
     return {
         "versioning": versioning,
         "current_version": current_version,
+        "ci": ci,
         "_profile": selected,  # type: ignore[dict-item]
     }
 
@@ -100,6 +109,7 @@ def run_init(
     force: bool = False,
     ecosystem: Optional[str] = None,
     mode: str = "auto",
+    ci: str = "none",
 ) -> None:
     """Inicializa frontend-spec en un proyecto frontend Greenfield o Brownfield."""
     target_dir = Path(target_dir).resolve()
@@ -154,9 +164,11 @@ def run_init(
             current_version,
             target_dir,
             ecosystem_explicit=bool(ecosystem),
+            ci=ci,
         )
         versioning = res["versioning"]
         current_version = res["current_version"]
+        ci = res.get("ci", ci)
         profile = res["_profile"]  # type: ignore[assignment]
 
     if current_version == "0.1.0" and versioning == "calver":
@@ -246,6 +258,21 @@ def run_init(
         res_hook = update_pre_commit_hook(target_dir, hook_src, dry_run=False)
         if res_hook != "NO_GIT":
             print(f"[OK] Git Hook instalado en .git/hooks/pre-commit ({res_hook})")
+
+    # 7. Guardrail CI GitHub Actions opt-in
+    if ci == "github":
+        ci_res = update_github_ci_workflow(
+            target_dir, templates_root, ci="github", force=force, dry_run=False
+        )
+        if ci_res in ("CREATED", "UPDATED"):
+            print(
+                f"[OK] Guardrail CI instalado en .github/workflows/frontend-spec-check.yml ({ci_res})"
+            )
+        elif ci_res == "SKIPPED_CUSTOM":
+            print(
+                "[INFO] .github/workflows/frontend-spec-check.yml ya existe sin marcador gestionado "
+                "(conservado sin sobrescribir)"
+            )
 
     print(f"\n[OK] frontend-spec v{__version__} inicializado con exito.")
     if effective_state == "brownfield":

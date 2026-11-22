@@ -18,7 +18,17 @@ Las versiones del framework se estructuran bajo `MAJOR.MINOR.PATCH` (mientras el
 
 ## [Unreleased]
 
-*(Sin cambios pendientes planificados en este momento.)*
+### Added
+- Estrategia unificada de ramas y promoción (`PR -> CI (+ Preview)`, `main -> Staging`, `tag vX.Y.Z -> Producción`) en `templates/.spec/docs/technical/deployment-strategy.md`, `templates/.spec/templates/_template_deployment.md` y guías operativas, alineada con `fspec resolve` (integración) vs. `fspec resolve --bump` + tag (release) y con adaptación explícita para PaaS y monorepos.
+- Contrato de variables públicas por ambiente en `schemas/technical/deployment-strategy.schema.json` (propiedades opcionales aditivas `branching_model`, `environments`, `required`, `ci_source`, `environments` en items), tablas de variables (`vars.*`), `.env.example` sin secretos y auditoría `gh variable/secret list`.
+- Nueva skill bajo demanda `frontend-deploy` en `templates/.spec/skills/frontend-deploy/SKILL.md`, instalada en los 4 harnesses (`antigravity`, `claude`, `cursor`, `windsurf`) y referenciada en `agent-prompts/` y `harnesses/`.
+- Flag opt-in `--ci {none,github}` en `fspec init` y `fspec update` para instalar/actualizar el guardrail de servidor `.github/workflows/frontend-spec-check.yml` (`# FRONTEND-SPEC-CI-MANAGED`) fijado al tag del framework, respetando workflows personalizados y otros workflows existentes.
+
+### Changed
+- Actualizados `agent-prompts/commands/02d_plan_ui_guarantees_and_deploy.md`, `guides/01-new-projects-greenfield.md`, `guides/03-daily-workflow-two-speeds.md` y `guides/04-cli-harnesses-and-contracts.md` con el flujo `frontend-deploy` y `--ci github`.
+
+### Fixed
+- Matriz de versiones de Python en `.github/workflows/ci.yml` actualizada de `["3.9", "3.12"]` a `["3.11", "3.13"]` para alinear el CI con versiones activas disponibles en runners `ubuntu-latest` (Ubuntu 26.04) y `windows-latest`.
 
 ---
 

@@ -20,6 +20,35 @@
       "type": "string",
       "enum": ["static-cdn", "ssr-node", "edge-serverless", "hybrid"]
     },
+    "branching_model": {
+      "type": "string",
+      "enum": ["trunk-based", "github-flow", "gitflow"]
+    },
+    "environments": {
+      "type": "object",
+      "properties": {
+        "preview": {
+          "type": "object",
+          "properties": {
+            "trigger": { "type": "string" }
+          }
+        },
+        "staging": {
+          "type": "object",
+          "properties": {
+            "trigger": { "type": "string" },
+            "github_environment": { "type": "string" }
+          }
+        },
+        "production": {
+          "type": "object",
+          "properties": {
+            "trigger": { "type": "string" },
+            "github_environment": { "type": "string" }
+          }
+        }
+      }
+    },
     "pipeline_diagram_mermaid": {
       "type": "string",
       "minLength": 10
@@ -40,6 +69,20 @@
           },
           "is_secret": {
             "type": "boolean"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "ci_source": {
+            "type": "string",
+            "enum": ["github_var", "platform_env", "runtime_env"]
+          },
+          "environments": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["local", "preview", "staging", "production"]
+            }
           }
         }
       }
